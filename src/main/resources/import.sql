@@ -24,6 +24,17 @@ LOCK TABLES `users` WRITE;
 INSERT INTO `users` VALUES (1,'john_doe'),(2,'jane_doe'),(3,'cool_cat'),(4,'happy_dog'),(5,'tech_guru'),(6,'star_wars_fan'),(7,'music_lover'),(8,'movie_buff'),(9,'book_worm'),(10,'foodie_123'),(11,'travel_bug'),(12,'sports_fan'),(13,'gamer_gal'),(14,'coding_ninja'),(15,'fitness_freak'),(16,'nature_lover'),(17,'coffee_addict'),(18,'art_enthusiast'),(19,'fashionista'),(20,'science_geek');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Dumping data for table `accounts`
+--
+
+LOCK TABLES `accounts` WRITE;
+/*!40000 ALTER TABLE `accounts` DISABLE KEYS */;
+INSERT INTO `accounts` VALUES (0.00,2,4,'Efectivo'),(0.00,3,4,'Cuenta bancaria');
+/*!40000 ALTER TABLE `accounts` ENABLE KEYS */;
+UNLOCK TABLES;
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -34,4 +45,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-06-27  2:17:58
+-- Dump completed on 2024-06-27  8:45:25
