@@ -1,5 +1,7 @@
 package com.jeison.finance.finance_app.services;
 
+import com.jeison.finance.finance_app.exceptions.DuplicateFieldException;
+import com.jeison.finance.finance_app.exceptions.NullFieldException;
 import com.jeison.finance.finance_app.models.User;
 import com.jeison.finance.finance_app.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,15 +19,13 @@ public class UserService {
         return (List<User>) userRepository.findAll();
     }
 
-    public User saveUser(User u) {
-        if (u.getUsername() == null || u.getUsername().isBlank()) {
-            System.out.println("Ingrese un nombre de usuario");
-            return null;
-        }
-        if (userRepository.findByUsername(u.getUsername()).isPresent()) {
-            System.err.println("Nombre de usuario no disponible");
-            return null;
-        }
-        return userRepository.save(u);
+    public User saveUser(User user) {
+        if (user == null)
+            throw new NullFieldException("El usuario no puede ser nulo");
+        if (user.getUsername() == null || user.getUsername().isBlank())
+            throw new NullFieldException("El nombre de usuario no puede ser nulo");
+        if (userRepository.findByUsername(user.getUsername()).isPresent())
+            throw new DuplicateFieldException("El nombre de usuario ya existe: " + user.getUsername());
+        return userRepository.save(user);
     }
 }
