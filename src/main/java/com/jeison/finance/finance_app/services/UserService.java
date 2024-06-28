@@ -11,9 +11,21 @@ import java.util.List;
 public class UserService {
 
     @Autowired
-    private UserRepository repository;
+    private UserRepository userRepository;
 
     public List<User> findAllUsers() {
-        return (List<User>) repository.findAll();
+        return (List<User>) userRepository.findAll();
+    }
+
+    public User saveUser(User u) {
+        if (u.getUsername() == null || u.getUsername().isBlank()) {
+            System.out.println("Ingrese un nombre de usuario");
+            return null;
+        }
+        if (userRepository.findByUsername(u.getUsername()).isPresent()) {
+            System.err.println("Nombre de usuario no disponible");
+            return null;
+        }
+        return userRepository.save(u);
     }
 }
