@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,17 +23,16 @@ public class UserController {
 
     @GetMapping("/show")
     public ResponseEntity<List<User>> getAllUsers() {
-        List<User> users = userService.findAllUsers();
-
-        if (users.isEmpty())
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-
-        return new ResponseEntity<List<User>>(users, HttpStatus.OK);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(userService.findAllUsers());
     }
 
     @PostMapping("/register")
     public ResponseEntity<User> createUser(@RequestBody User user) {
-        return new ResponseEntity<User>(userService.saveUser(user), HttpStatus.CREATED);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(userService.saveUser(user));
     }
 
 }

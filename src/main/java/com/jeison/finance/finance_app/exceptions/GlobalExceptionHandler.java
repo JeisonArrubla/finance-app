@@ -10,27 +10,39 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(NullFieldException.class)
-    public ResponseEntity<ErrorDetails> handleNullFieldException(NullFieldException e) {
-        ErrorDetails errorDetails = new ErrorDetails(
-                LocalDateTime.now(),
-                HttpStatus.BAD_REQUEST.value(),
-                e.getMessage(),
-                "Datos del formulario proporcionados incompletos");
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST.value())
-                .body(errorDetails);
-    }
+        @ExceptionHandler(NullFieldException.class)
+        public ResponseEntity<ErrorDetails> handleNullFieldException(NullFieldException e) {
+                ErrorDetails errorDetails = new ErrorDetails(
+                                LocalDateTime.now(),
+                                HttpStatus.BAD_REQUEST.value(),
+                                e.getMessage(),
+                                "Datos del formulario proporcionados incompletos");
+                return ResponseEntity
+                                .status(HttpStatus.BAD_REQUEST.value())
+                                .body(errorDetails);
+        }
 
-    @ExceptionHandler(DuplicateFieldException.class)
-    public ResponseEntity<ErrorDetails> handleDuplicateFieldException(DuplicateFieldException e) {
-        ErrorDetails errorDetails = new ErrorDetails(
-                LocalDateTime.now(),
-                HttpStatus.CONFLICT.value(),
-                e.getMessage(),
-                "Error por campo duplicado en la base de datos");
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT.value())
-                .body(errorDetails);
-    }
+        @ExceptionHandler(DuplicateFieldException.class)
+        public ResponseEntity<ErrorDetails> handleDuplicateFieldException(DuplicateFieldException e) {
+                ErrorDetails errorDetails = new ErrorDetails(
+                                LocalDateTime.now(),
+                                HttpStatus.CONFLICT.value(),
+                                e.getMessage(),
+                                "Error por campo duplicado en la base de datos");
+                return ResponseEntity
+                                .status(HttpStatus.CONFLICT.value())
+                                .body(errorDetails);
+        }
+
+        @ExceptionHandler(NullPointerException.class)
+        public ResponseEntity<ErrorDetails> handleNullPointerException(NullPointerException e) {
+                ErrorDetails errorDetails = new ErrorDetails(
+                                LocalDateTime.now(),
+                                HttpStatus.NOT_FOUND.value(),
+                                e.getMessage(),
+                                "Recurso no encontrado");
+                return ResponseEntity
+                                .status(HttpStatus.NOT_FOUND)
+                                .body(errorDetails);
+        }
 }

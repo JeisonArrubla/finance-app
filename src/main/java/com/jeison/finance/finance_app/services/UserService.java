@@ -16,7 +16,10 @@ public class UserService {
     private UserRepository userRepository;
 
     public List<User> findAllUsers() {
-        return (List<User>) userRepository.findAll();
+        List<User> users = (List<User>) userRepository.findAll();
+        if (users.isEmpty())
+            throw new NullPointerException("No hay usuarios registrados");
+        return users;
     }
 
     public User saveUser(User user) {
