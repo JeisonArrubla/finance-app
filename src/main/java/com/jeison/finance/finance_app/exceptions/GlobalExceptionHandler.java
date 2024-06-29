@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import jakarta.persistence.EntityNotFoundException;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -33,7 +35,9 @@ public class GlobalExceptionHandler {
                                 .body(errorDetails);
         }
 
-        @ExceptionHandler({ NullPointerException.class, ResourceNotFoundException.class })
+        @ExceptionHandler({ NullPointerException.class,
+                        ResourceNotFoundException.class,
+                        EntityNotFoundException.class })
         public ResponseEntity<ErrorDetails> handleNotFoundException(Exception e) {
                 ErrorDetails errorDetails = new ErrorDetails(
                                 LocalDateTime.now(),

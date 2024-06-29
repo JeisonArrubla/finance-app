@@ -3,11 +3,16 @@ package com.jeison.finance.finance_app.services;
 import com.jeison.finance.finance_app.exceptions.NullFieldException;
 import com.jeison.finance.finance_app.models.User;
 import com.jeison.finance.finance_app.repositories.UserRepository;
+
+import jakarta.persistence.EntityNotFoundException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class UserService {
@@ -30,5 +35,13 @@ public class UserService {
         if (userRepository.findByUsername(user.getUsername()).isPresent())
             throw new DuplicateKeyException("El nombre de usuario ya existe");
         return userRepository.save(user);
+    }
+
+    public Map<String, String> deleteUser(User user) {
+        if (userRepository.existsById(user.getId())) {
+            userRepository.delete(user);
+            return Collections.singletonMap("message", "Usuario eliminado con éxito");
+        }
+        throw new EntityNotFoundException("Error al eliminar el usuario, inténtalo de nuevo");
     }
 }
