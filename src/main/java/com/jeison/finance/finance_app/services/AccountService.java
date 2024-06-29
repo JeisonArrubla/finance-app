@@ -1,6 +1,8 @@
 package com.jeison.finance.finance_app.services;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -31,10 +33,21 @@ public class AccountService {
             throw new NullFieldException("El id del usuario no puede ser nulo");
         if (account.getBalance() == null)
             account.setBalance(BigDecimal.ZERO);
-        if (userRepository.findById(account.getUser().getId()).isEmpty())
+        if (!userRepository.existsById(account.getUser().getId()))
             throw new ResourceNotFoundException("Usuario no encontrado");
         if (accountRepository.findByDescriptionAndUser(account.getDescription(), account.getUser()).isPresent())
             throw new DuplicateKeyException("Nombre de cuenta ya existe");
         return accountRepository.save(account);
+    }
+
+    public Map<String, String> deleteAccount(Account account) {
+        if (account == null)
+            throw new NullPointerException("La cuenta no puede ser nula");
+        if (account.getId() == null)
+            throw new NullFieldException("El id no puede ser nulo");
+        if (!accountRepository.existsById(account.getId()))
+            throw new ResourceNotFoundException("Cuenta no encontrada");
+        accountRepository.delete(account);
+        return Collections.singletonMap("message", "Cuenta eliminada con éxito");
     }
 }
