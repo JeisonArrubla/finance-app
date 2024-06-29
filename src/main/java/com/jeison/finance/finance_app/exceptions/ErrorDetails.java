@@ -7,13 +7,11 @@ public class ErrorDetails {
     private LocalDateTime timestamp;
     private int status;
     private String message;
-    private String details;
 
-    public ErrorDetails(LocalDateTime timestamp, int status, String message, String details) {
+    public ErrorDetails(LocalDateTime timestamp, int status, String message) {
         this.timestamp = timestamp;
         this.status = status;
         this.message = message;
-        this.details = details;
     }
 
     public LocalDateTime getTimestamp() {
@@ -38,13 +36,5 @@ public class ErrorDetails {
 
     public void setMessage(String message) {
         this.message = message;
-    }
-
-    public String getDetails() {
-        return details;
-    }
-
-    public void setDetails(String details) {
-        this.details = details;
     }
 }

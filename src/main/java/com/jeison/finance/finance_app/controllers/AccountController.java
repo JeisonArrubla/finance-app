@@ -6,6 +6,8 @@ import com.jeison.finance.finance_app.services.AccountService;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -17,8 +19,10 @@ public class AccountController {
     private AccountService service;
 
     @PostMapping("/create")
-    public Account createAccount(@RequestBody Account account) {
-        return service.saveAccount(account);
+    public ResponseEntity<Account> createAccount(@RequestBody Account account) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(service.saveAccount(account));
     }
 
 }

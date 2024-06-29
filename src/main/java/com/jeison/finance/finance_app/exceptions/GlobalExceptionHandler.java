@@ -2,6 +2,7 @@ package com.jeison.finance.finance_app.exceptions;
 
 import java.time.LocalDateTime;
 
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,32 +16,29 @@ public class GlobalExceptionHandler {
                 ErrorDetails errorDetails = new ErrorDetails(
                                 LocalDateTime.now(),
                                 HttpStatus.BAD_REQUEST.value(),
-                                e.getMessage(),
-                                "Datos del formulario proporcionados incompletos");
+                                e.getMessage());
                 return ResponseEntity
                                 .status(HttpStatus.BAD_REQUEST.value())
                                 .body(errorDetails);
         }
 
-        @ExceptionHandler(DuplicateFieldException.class)
-        public ResponseEntity<ErrorDetails> handleDuplicateFieldException(DuplicateFieldException e) {
+        @ExceptionHandler(DuplicateKeyException.class)
+        public ResponseEntity<ErrorDetails> handleDuplicateFieldException(DuplicateKeyException e) {
                 ErrorDetails errorDetails = new ErrorDetails(
                                 LocalDateTime.now(),
                                 HttpStatus.CONFLICT.value(),
-                                e.getMessage(),
-                                "Error por campo duplicado en la base de datos");
+                                e.getMessage());
                 return ResponseEntity
                                 .status(HttpStatus.CONFLICT.value())
                                 .body(errorDetails);
         }
 
-        @ExceptionHandler(NullPointerException.class)
-        public ResponseEntity<ErrorDetails> handleNullPointerException(NullPointerException e) {
+        @ExceptionHandler({ NullPointerException.class, ResourceNotFoundException.class })
+        public ResponseEntity<ErrorDetails> handleNotFoundException(Exception e) {
                 ErrorDetails errorDetails = new ErrorDetails(
                                 LocalDateTime.now(),
                                 HttpStatus.NOT_FOUND.value(),
-                                e.getMessage(),
-                                "Recurso no encontrado");
+                                e.getMessage());
                 return ResponseEntity
                                 .status(HttpStatus.NOT_FOUND)
                                 .body(errorDetails);
