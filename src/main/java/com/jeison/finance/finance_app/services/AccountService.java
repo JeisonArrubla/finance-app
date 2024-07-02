@@ -2,6 +2,7 @@ package com.jeison.finance.finance_app.services;
 
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,10 @@ public class AccountService {
     private AccountRepository accountRepository;
     @Autowired
     private UserRepository userRepository;
+
+    public List<Account> getAccountsByUserId(Long userId) {
+        return accountRepository.findByUserId(userId);
+    }
 
     public Account saveAccount(Account account) {
         if (account == null)
