@@ -1,6 +1,7 @@
 package com.jeison.finance.finance_app.exceptions;
 
 import java.time.LocalDateTime;
+import java.util.NoSuchElementException;
 
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -37,7 +38,8 @@ public class GlobalExceptionHandler {
 
         @ExceptionHandler({ NullPointerException.class,
                         ResourceNotFoundException.class,
-                        EntityNotFoundException.class })
+                        EntityNotFoundException.class,
+                        NoSuchElementException.class })
         public ResponseEntity<ErrorDetails> handleNotFoundException(Exception e) {
                 ErrorDetails errorDetails = new ErrorDetails(
                                 LocalDateTime.now(),
