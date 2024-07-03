@@ -1,5 +1,6 @@
 package com.jeison.finance.finance_app.controllers;
 
+import com.jeison.finance.finance_app.dto.AccountDto;
 import com.jeison.finance.finance_app.models.Account;
 import com.jeison.finance.finance_app.services.AccountService;
 
@@ -32,7 +33,7 @@ public class AccountController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<List<Account>> getAccountsByUserId(@PathVariable Long userId) {
+    public ResponseEntity<List<AccountDto>> getAccountsByUserId(@PathVariable Long userId) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(accountService.getAccountsByUserId(userId));
     }

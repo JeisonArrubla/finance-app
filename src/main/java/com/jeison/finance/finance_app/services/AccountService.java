@@ -1,14 +1,17 @@
 package com.jeison.finance.finance_app.services;
 
 import java.math.BigDecimal;
+// import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
+import com.jeison.finance.finance_app.dto.AccountDto;
 import com.jeison.finance.finance_app.exceptions.NullFieldException;
 import com.jeison.finance.finance_app.exceptions.ResourceNotFoundException;
 import com.jeison.finance.finance_app.models.Account;
@@ -23,8 +26,11 @@ public class AccountService {
     @Autowired
     private UserRepository userRepository;
 
-    public List<Account> getAccountsByUserId(Long userId) {
-        return accountRepository.findByUserId(userId);
+    public List<AccountDto> getAccountsByUserId(Long userId) {
+        return accountRepository.findByUserId(userId).stream()
+                .map(a -> new AccountDto(a.getDescription(), a.getBalance()))
+                .collect(Collectors.toList());
+
     }
 
     public Account saveAccount(Account account) {
