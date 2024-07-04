@@ -52,6 +52,19 @@ public class AccountService {
         return Collections.singletonMap("message", "Cuenta creada con éxito");
     }
 
+    public Map<String, String> updateAccount(Account account) {
+        if (account == null)
+            throw new NullPointerException("La cuenta no puede ser nula");
+        if (account.getId() == null)
+            throw new NullFieldException("El id de la cuenta no puede ser nulo");
+        if (account.getUser().getId() == null)
+            throw new NullFieldException("El id del usuario no puede ser nulo");
+        if (accountRepository.findByDescriptionAndUser(account.getDescription(), account.getUser()).isPresent())
+            throw new DuplicateKeyException("Nombre de cuenta ya existe");
+        accountRepository.save(account);
+        return Collections.singletonMap("message", "Cuenta actualizada con éxito");
+    }
+
     public Map<String, String> deleteAccount(Account account) {
         if (account == null)
             throw new NullPointerException("La cuenta no puede ser nula");
