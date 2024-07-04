@@ -33,7 +33,7 @@ public class AccountService {
 
     }
 
-    public Account saveAccount(Account account) {
+    public Map<String, String> createAccount(Account account) {
         if (account == null)
             throw new NullPointerException("La cuenta no puede ser nula");
         if (account.getDescription() == null)
@@ -48,7 +48,8 @@ public class AccountService {
             throw new ResourceNotFoundException("Usuario no encontrado");
         if (accountRepository.findByDescriptionAndUser(account.getDescription(), account.getUser()).isPresent())
             throw new DuplicateKeyException("Nombre de cuenta ya existe");
-        return accountRepository.save(account);
+        accountRepository.save(account);
+        return Collections.singletonMap("message", "Cuenta creada con éxito");
     }
 
     public Map<String, String> deleteAccount(Account account) {

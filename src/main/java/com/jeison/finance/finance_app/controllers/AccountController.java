@@ -26,10 +26,10 @@ public class AccountController {
     private AccountService accountService;
 
     @PostMapping("/create")
-    public ResponseEntity<Account> createAccount(@RequestBody Account account) {
+    public ResponseEntity<Map<String, String>> createAccount(@RequestBody Account account) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(accountService.saveAccount(account));
+                .body(accountService.createAccount(account));
     }
 
     @GetMapping("/{userId}")
