@@ -1,22 +1,26 @@
 package com.jeison.finance.finance_app.controllers;
 
-import com.jeison.finance.finance_app.dto.UserDto;
-import com.jeison.finance.finance_app.models.User;
-import com.jeison.finance.finance_app.services.UserService;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PostMapping;
+
+import jakarta.validation.Valid;
+
+import com.jeison.finance.finance_app.dto.UserDto;
+import com.jeison.finance.finance_app.models.User;
+import com.jeison.finance.finance_app.services.UserService;
 
 @RestController
 @RequestMapping("/users")
@@ -33,7 +37,10 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Map<String, String>> createUser(@RequestBody User user) {
+    public ResponseEntity<?> createUser(@Valid @RequestBody User user, BindingResult result) {
+        if (result.hasFieldErrors()) {
+            return validation(result);
+        }
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(userService.createUser(user));
@@ -51,5 +58,15 @@ public class UserController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(userService.deleteUser(user));
+    }
+
+    private ResponseEntity<?> validation(BindingResult bindingResult) {
+        Map<String, String> errors = new HashMap<>();
+        bindingResult.getFieldErrors().forEach(error -> {
+            errors.put(error.getField(), "El campo " + error.getField() + " " + error.getDefaultMessage());
+        });
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(null);
     }
 }
