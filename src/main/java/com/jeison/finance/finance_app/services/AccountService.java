@@ -1,17 +1,16 @@
 package com.jeison.finance.finance_app.services;
 
 import java.math.BigDecimal;
-// import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.jeison.finance.finance_app.dto.AccountDto;
 import com.jeison.finance.finance_app.exceptions.NullFieldException;
 import com.jeison.finance.finance_app.exceptions.ResourceNotFoundException;
 import com.jeison.finance.finance_app.models.Account;
@@ -26,13 +25,13 @@ public class AccountService {
     @Autowired
     private UserRepository userRepository;
 
-    public List<AccountDto> getAccountsByUserId(Long userId) {
-        return accountRepository.findByUserId(userId).stream()
-                .map(a -> new AccountDto(a.getDescription(), a.getBalance()))
-                .collect(Collectors.toList());
+    @Transactional(readOnly = true)
+    public List<Account> getAccountsByUserId(Long userId) {
+        return accountRepository.findByUserId(userId);
 
     }
 
+    @Transactional
     public Map<String, String> createAccount(Account account) {
         if (account == null)
             throw new NullPointerException("La cuenta no puede ser nula");
@@ -52,19 +51,18 @@ public class AccountService {
         return Collections.singletonMap("message", "Cuenta creada con éxito");
     }
 
-    public Map<String, String> updateAccount(Account account) {
-        if (account == null)
-            throw new NullPointerException("La cuenta no puede ser nula");
-        if (account.getId() == null)
-            throw new NullFieldException("El id de la cuenta no puede ser nulo");
-        if (account.getUser().getId() == null)
-            throw new NullFieldException("El id del usuario no puede ser nulo");
-        if (accountRepository.findByDescriptionAndUser(account.getDescription(), account.getUser()).isPresent())
-            throw new DuplicateKeyException("Nombre de cuenta ya existe");
-        accountRepository.save(account);
-        return Collections.singletonMap("message", "Cuenta actualizada con éxito");
+    @Transactional
+    public Optional<Account> update(Long id, Account account) {
+        Optional<Account> accountOptional = accountRepository.findById(id);
+        if (accountOptional.isPresent()) {
+            Account accountDb = accountOptional.orElseThrow();
+            accountDb.setDescription(account.getDescription());
+            return Optional.of(accountRepository.save(accountDb));
+        }
+        return accountOptional;
     }
 
+    @Transactional
     public Map<String, String> deleteAccount(Account account) {
         if (account == null)
             throw new NullPointerException("La cuenta no puede ser nula");

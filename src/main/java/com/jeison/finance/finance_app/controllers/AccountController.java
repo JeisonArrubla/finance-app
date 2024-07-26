@@ -1,14 +1,17 @@
 package com.jeison.finance.finance_app.controllers;
 
-import com.jeison.finance.finance_app.dto.AccountDto;
 import com.jeison.finance.finance_app.models.Account;
 import com.jeison.finance.finance_app.services.AccountService;
 
+import jakarta.validation.Valid;
+
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,17 +19,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
-@RequestMapping("/accounts")
+@RequestMapping("api/v1/accounts")
 public class AccountController {
 
     @Autowired
     private AccountService accountService;
 
-    @PostMapping("/create")
+    @PostMapping
     public ResponseEntity<Map<String, String>> createAccount(@RequestBody Account account) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -34,20 +36,27 @@ public class AccountController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<List<AccountDto>> getAccountsByUserId(@PathVariable Long userId) {
+    public ResponseEntity<List<Account>> getAccountsByUserId(@PathVariable Long userId) {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(accountService.getAccountsByUserId(userId));
     }
 
-    @PatchMapping("/update")
-    public ResponseEntity<Map<String, String>> updateAccount(@RequestBody Account account) {
+    @PutMapping
+    public ResponseEntity<?> updateAccount(@PathVariable Long id,
+            @Valid @RequestBody Account account) {
+        Optional<Account> accountOptional = accountService.update(id, account);
+        if (accountOptional.isPresent()) {
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(accountOptional.orElseThrow());
+        }
         return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(accountService.updateAccount(account));
+                .status(HttpStatus.NOT_FOUND)
+                .build();
     }
 
-    @DeleteMapping("/delete")
+    @DeleteMapping
     public ResponseEntity<Map<String, String>> deleteAccount(@RequestBody Account account) {
         return ResponseEntity
                 .status(HttpStatus.OK)
