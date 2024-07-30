@@ -28,6 +28,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import static com.jeison.finance.finance_app.security.TokenJwtConfig.*;
+import static com.jeison.finance.finance_app.security.FilterJwtConfig.*;
 
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
@@ -79,9 +80,20 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         Map<String, String> body = new HashMap<>();
         body.put("token", jwsToken);
         body.put("username", username);
-        body.put("message", String.format("%s: has iniciado sesión con éxito", username));
+        body.put("message", String.format(SUCCESSFUL_AUT_MESSAGE_ES, username));
         response.getWriter().write(new ObjectMapper().writeValueAsString(body));
-        response.setContentType("application/json");
+        response.setContentType(CONTENT_TYPE);
         response.setStatus(HttpStatus.OK.value());
+    }
+
+    @Override
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
+            AuthenticationException failed) throws IOException, ServletException {
+        Map<String, String> body = new HashMap<>();
+        body.put("message", UNSUCCESSFUL_AUT_MESSAGE_ES);
+        body.put("error", failed.getMessage());
+        response.getWriter().write(new ObjectMapper().writeValueAsString(body));
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.setContentType(CONTENT_TYPE);
     }
 }
