@@ -47,6 +47,12 @@ public class UserController {
                 .body(userService.save(user));
     }
 
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@Valid @RequestBody User user, BindingResult bindingResult) {
+        user.setAdmin(false);
+        return create(user, bindingResult);
+    }
+
     @PutMapping
     public ResponseEntity<?> updateUser(@PathVariable Long id, @Valid @RequestBody User user) {
         Optional<User> userOptional = userService.update(id, user);
