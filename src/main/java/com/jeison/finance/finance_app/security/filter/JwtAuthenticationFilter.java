@@ -28,7 +28,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import static com.jeison.finance.finance_app.security.TokenJwtConfig.*;
-import static com.jeison.finance.finance_app.security.FilterJwtConfig.*;
+import static com.jeison.finance.finance_app.security.filter.FilterJwtConfig.*;
 
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 

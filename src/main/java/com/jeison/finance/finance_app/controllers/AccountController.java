@@ -42,7 +42,7 @@ public class AccountController {
                 .body(accountService.getAccountsByUserId(userId));
     }
 
-    @PutMapping
+    @PutMapping("/{id}")
     public ResponseEntity<?> updateAccount(@PathVariable Long id,
             @Valid @RequestBody Account account) {
         Optional<Account> accountOptional = accountService.update(id, account);

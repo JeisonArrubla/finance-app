@@ -26,6 +26,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import static com.jeison.finance.finance_app.security.TokenJwtConfig.*;
+import static com.jeison.finance.finance_app.security.filter.FilterJwtConfig.*;
 
 public class JwtValidationFilter extends BasicAuthenticationFilter {
 
@@ -63,7 +64,7 @@ public class JwtValidationFilter extends BasicAuthenticationFilter {
         } catch (JwtException e) {
             Map<String, String> body = new HashMap<>();
             body.put("error", e.getMessage());
-            body.put("message", "El token JWT es inválido");
+            body.put("message", INVALID_TOKEN_MESSAGE_ES);
             response.getWriter().write(new ObjectMapper().writeValueAsString(body));
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.setContentType(CONTENT_TYPE);
