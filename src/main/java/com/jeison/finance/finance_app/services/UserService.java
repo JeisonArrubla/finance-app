@@ -4,6 +4,7 @@ import com.jeison.finance.finance_app.models.Role;
 import com.jeison.finance.finance_app.models.User;
 import com.jeison.finance.finance_app.repositories.RoleRepository;
 import com.jeison.finance.finance_app.repositories.UserRepository;
+import com.jeison.finance.finance_app.services.interfaces.IUserService;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -19,10 +20,10 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
-public class UserService {
+public class UserService implements IUserService {
 
     @Autowired
-    private UserRepository userRepository;
+    private UserRepository repository;
 
     @Autowired
     private RoleRepository roleRepository;
@@ -30,18 +31,25 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Override
+    public User findUserById(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findUserById'");
+    }
+
     @Transactional(readOnly = true)
-    public List<User> findAllUsers() {
+    public List<User> findAll() {
         List<User> users = new ArrayList<>();
-        userRepository.findAll().forEach(users::add);
+        repository.findAll().forEach(users::add);
         if (users.isEmpty())
             throw new NullPointerException("No hay usuarios registrados");
         return users;
     }
 
     @Transactional
-    public Map<String, String> save(User user) {
-        if (userRepository.existsByUsername(user.getUsername()))
+    @Override
+    public User create(User user) {
+        if (repository.existsByUsername(user.getUsername()))
             throw new IllegalArgumentException("El nombre de usuario ya está en uso");
         Optional<Role> optionalRoleUser = roleRepository.findByName("ROLE_USER");
         List<Role> roles = new ArrayList<>();
@@ -55,26 +63,32 @@ public class UserService {
         user.setRoles(roles);
         user.setUsername(user.getUsername().toLowerCase());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
-        return Collections.singletonMap("message", "Usuario creado con éxito");
+        return repository.save(user);
     }
 
     @Transactional
+    @Override
     public Optional<User> update(Long id, User user) {
-        Optional<User> userOptional = userRepository.findById(id);
+        Optional<User> userOptional = repository.findById(id);
         if (userOptional.isPresent()) {
             User userDb = userOptional.orElseThrow();
-            userDb.setUsername(user.getUsername());
-            return Optional.of(userRepository.save(userDb));
+            if (user.getUsername() != null) {
+                userDb.setUsername(user.getUsername());
+            }
+            if (user.getPassword() != null) {
+                userDb.setPassword(passwordEncoder.encode(user.getPassword()));
+            }
+            return Optional.of(repository.save(userDb));
         }
         return userOptional;
     }
 
     @Transactional
-    public Map<String, String> deleteUser(Long id) {
-        Optional<User> optionalUser = userRepository.findById(id);
+    @Override
+    public Map<String, String> delete(Long id) {
+        Optional<User> optionalUser = repository.findById(id);
         if (optionalUser.isPresent()) {
-            userRepository.delete(optionalUser.get());
+            repository.delete(optionalUser.get());
             return Collections.singletonMap("message", "Usuario eliminado con éxito");
         }
         throw new EntityNotFoundException("Error al eliminar el usuario, inténtalo de nuevo");

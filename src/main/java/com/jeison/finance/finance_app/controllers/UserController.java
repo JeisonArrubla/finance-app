@@ -21,30 +21,30 @@ import org.springframework.web.bind.annotation.PutMapping;
 import jakarta.validation.Valid;
 
 import com.jeison.finance.finance_app.models.User;
-import com.jeison.finance.finance_app.services.UserService;
+import com.jeison.finance.finance_app.services.interfaces.IUserService;
 
 @RestController
 @RequestMapping("/api/v1/users")
 public class UserController {
 
     @Autowired
-    private UserService userService;
+    private IUserService service;
 
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
+    public ResponseEntity<List<User>> findAll() {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(userService.findAllUsers());
+                .body(service.findAll());
     }
 
     @PostMapping
     public ResponseEntity<?> create(@Valid @RequestBody User user, BindingResult bindingResult) {
-        if (bindingResult.hasFieldErrors()) {
+        if (bindingResult.hasFieldErrors())
             return validation(bindingResult);
-        }
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(userService.save(user));
+                .body(service.create(user));
     }
 
     @PostMapping("/register")
@@ -53,9 +53,11 @@ public class UserController {
         return create(user, bindingResult);
     }
 
-    @PutMapping
-    public ResponseEntity<?> updateUser(@PathVariable Long id, @Valid @RequestBody User user) {
-        Optional<User> userOptional = userService.update(id, user);
+    @PutMapping("/{id}")
+    public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody User user, BindingResult bindingResult) {
+        if (bindingResult.hasFieldErrors())
+            return validation(bindingResult);
+        Optional<User> userOptional = service.update(id, user);
         if (userOptional.isPresent()) {
             return ResponseEntity
                     .status(HttpStatus.CREATED)
@@ -70,7 +72,7 @@ public class UserController {
     public ResponseEntity<Map<String, String>> deteleUser(@PathVariable Long id) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(userService.deleteUser(id));
+                .body(service.delete(id));
     }
 
     private ResponseEntity<?> validation(BindingResult bindingResult) {
