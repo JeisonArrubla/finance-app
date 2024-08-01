@@ -4,10 +4,10 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,8 +16,6 @@ import com.jeison.finance.finance_app.exceptions.ResourceNotFoundException;
 import com.jeison.finance.finance_app.models.Account;
 import com.jeison.finance.finance_app.repositories.AccountRepository;
 import com.jeison.finance.finance_app.repositories.UserRepository;
-
-import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class AccountService {
@@ -28,13 +26,14 @@ public class AccountService {
     private UserRepository userRepository;
 
     @Transactional(readOnly = true)
-    public List<Account> getAccountsByUserId(Long userId) {
+    public List<Account> findByUserId(Long userId, String currentUsername) {
+        if (!userRepository.findById(userId).orElseThrow().getUsername().equals(currentUsername))
+            throw new AccessDeniedException("No tienes acceso a las cuentas de este usuario");
         return repository.findByUserId(userId);
-
     }
 
     @Transactional
-    public Map<String, String> createAccount(Account account) {
+    public Account createAccount(Account account) {
         if (account == null)
             throw new NullPointerException("La cuenta no puede ser nula");
         if (account.getDescription() == null)
@@ -49,28 +48,22 @@ public class AccountService {
             throw new ResourceNotFoundException("Usuario no encontrado");
         if (repository.findByDescriptionAndUser(account.getDescription(), account.getUser()).isPresent())
             throw new DuplicateKeyException("Nombre de cuenta ya existe");
-        repository.save(account);
-        return Collections.singletonMap("message", "Cuenta creada con éxito");
+
+        return repository.save(account);
     }
 
     @Transactional
-    public Optional<Account> update(Long id, Account account) {
-        Optional<Account> accountOptional = repository.findById(id);
-        if (accountOptional.isPresent()) {
-            Account accountDb = accountOptional.orElseThrow();
-            accountDb.setDescription(account.getDescription());
-            return Optional.of(repository.save(accountDb));
-        }
-        return accountOptional;
+    public Account update(Long id, Account account, String currentUsername) {
+        Account dbAccount = repository.findById(id).orElseThrow();
+        if (!dbAccount.getUser().getUsername().equals(currentUsername))
+            throw new AccessDeniedException("No tienes permiso para editar esta cuenta");
+        dbAccount.setDescription(account.getDescription());
+        return repository.save(dbAccount);
     }
 
     @Transactional
     public Map<String, String> delete(Long id) {
-        Optional<Account> accountOptional = repository.findById(id);
-        if (accountOptional.isPresent()) {
-            repository.delete(accountOptional.orElseThrow());
-            return Collections.singletonMap("message", "Cuenta eliminada con éxito");
-        }
-        throw new EntityNotFoundException();
+        repository.delete(repository.findById(id).orElseThrow());
+        return Collections.singletonMap("message", "Cuenta eliminada con éxito");
     }
 }

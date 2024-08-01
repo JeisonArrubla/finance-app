@@ -6,6 +6,7 @@ import java.util.NoSuchElementException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -17,7 +18,7 @@ public class GlobalExceptionHandler {
         @ExceptionHandler({ BadRequestException.class,
                         NullFieldException.class,
                         IllegalArgumentException.class })
-        public ResponseEntity<ErrorDetails> handleNullFieldException(Exception e) {
+        public ResponseEntity<ErrorDetails> handleBadRequestException(Exception e) {
                 ErrorDetails errorDetails = new ErrorDetails(
                                 LocalDateTime.now(),
                                 HttpStatus.BAD_REQUEST.value(),
@@ -50,5 +51,14 @@ public class GlobalExceptionHandler {
                 return ResponseEntity
                                 .status(HttpStatus.NOT_FOUND)
                                 .body(errorDetails);
+        }
+
+        @ExceptionHandler(AccessDeniedException.class)
+        public ResponseEntity<ErrorDetails> handleForbiddenException(AccessDeniedException e) {
+                ErrorDetails errorDetails = new ErrorDetails(LocalDateTime.now(),
+                                HttpStatus.FORBIDDEN.value(),
+                                e.getMessage());
+                return ResponseEntity
+                                .status(HttpStatus.FORBIDDEN.value()).body(errorDetails);
         }
 }
