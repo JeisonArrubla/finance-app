@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 
 import com.jeison.finance.finance_app.models.User;
@@ -33,8 +34,18 @@ public class UserController {
     @GetMapping
     public ResponseEntity<List<User>> findAll() {
         return ResponseEntity
-                .status(HttpStatus.OK)
+                .status(HttpStatus.OK.value())
                 .body(service.findAll());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<User> findById(@PathVariable Long id) {
+        Optional<User> userOptional = service.findById(id);
+        if (userOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.OK.value())
+                    .body(userOptional.orElseThrow());
+        }
+        throw new EntityNotFoundException("Usuario no encontrado");
     }
 
     @PostMapping
@@ -43,7 +54,7 @@ public class UserController {
             return validation(bindingResult);
 
         return ResponseEntity
-                .status(HttpStatus.CREATED)
+                .status(HttpStatus.CREATED.value())
                 .body(service.create(user));
     }
 
@@ -60,7 +71,7 @@ public class UserController {
         Optional<User> userOptional = service.update(id, user);
         if (userOptional.isPresent()) {
             return ResponseEntity
-                    .status(HttpStatus.CREATED)
+                    .status(HttpStatus.CREATED.value())
                     .body(userOptional.orElseThrow());
         }
         return ResponseEntity
@@ -71,7 +82,7 @@ public class UserController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, String>> deteleUser(@PathVariable Long id) {
         return ResponseEntity
-                .status(HttpStatus.OK)
+                .status(HttpStatus.OK.value())
                 .body(service.delete(id));
     }
 
@@ -81,7 +92,7 @@ public class UserController {
             errors.put(error.getField(), error.getDefaultMessage());
         });
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
+                .status(HttpStatus.BAD_REQUEST.value())
                 .body(errors);
     }
 }

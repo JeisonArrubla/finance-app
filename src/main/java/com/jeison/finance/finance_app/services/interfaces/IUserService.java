@@ -10,7 +10,7 @@ public interface IUserService {
 
     User create(User user);
 
-    User findUserById(Long id);
+    Optional<User> findById(Long id);
 
     List<User> findAll();
 

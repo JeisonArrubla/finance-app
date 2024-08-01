@@ -32,9 +32,8 @@ public class UserService implements IUserService {
     private PasswordEncoder passwordEncoder;
 
     @Override
-    public User findUserById(Long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findUserById'");
+    public Optional<User> findById(Long id) {
+        return repository.findById(id);
     }
 
     @Transactional(readOnly = true)
@@ -51,13 +50,13 @@ public class UserService implements IUserService {
     public User create(User user) {
         if (repository.existsByUsername(user.getUsername()))
             throw new IllegalArgumentException("El nombre de usuario ya está en uso");
-        Optional<Role> optionalRoleUser = roleRepository.findByName("ROLE_USER");
+        Optional<Role> userRoleOptional = roleRepository.findByName("ROLE_USER");
         List<Role> roles = new ArrayList<>();
-        optionalRoleUser.ifPresent(roles::add);
+        userRoleOptional.ifPresent(roles::add);
         if (user.getAdmin() != null) {
             if (user.getAdmin()) {
-                Optional<Role> optionalRoleAdmin = roleRepository.findByName("ROLE_ADMIN");
-                optionalRoleAdmin.ifPresent(roles::add);
+                Optional<Role> adminRoleOptional = roleRepository.findByName("ROLE_ADMIN");
+                adminRoleOptional.ifPresent(roles::add);
             }
         }
         user.setRoles(roles);
@@ -86,9 +85,9 @@ public class UserService implements IUserService {
     @Transactional
     @Override
     public Map<String, String> delete(Long id) {
-        Optional<User> optionalUser = repository.findById(id);
-        if (optionalUser.isPresent()) {
-            repository.delete(optionalUser.get());
+        Optional<User> userOptional = repository.findById(id);
+        if (userOptional.isPresent()) {
+            repository.delete(userOptional.get());
             return Collections.singletonMap("message", "Usuario eliminado con éxito");
         }
         throw new EntityNotFoundException("Error al eliminar el usuario, inténtalo de nuevo");
