@@ -1,10 +1,13 @@
 package com.jeison.finance.finance_app.controllers;
 
+import com.jeison.finance.finance_app.exceptions.BadRequestException;
 import com.jeison.finance.finance_app.models.Account;
 import com.jeison.finance.finance_app.services.AccountService;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -26,26 +29,26 @@ import org.springframework.web.bind.annotation.PathVariable;
 public class AccountController {
 
     @Autowired
-    private AccountService accountService;
+    private AccountService service;
 
     @PostMapping
     public ResponseEntity<Map<String, String>> createAccount(@RequestBody Account account) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(accountService.createAccount(account));
+                .body(service.createAccount(account));
     }
 
     @GetMapping("/{userId}")
     public ResponseEntity<List<Account>> getAccountsByUserId(@PathVariable Long userId) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(accountService.getAccountsByUserId(userId));
+                .body(service.getAccountsByUserId(userId));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateAccount(@PathVariable Long id,
             @Valid @RequestBody Account account) {
-        Optional<Account> accountOptional = accountService.update(id, account);
+        Optional<Account> accountOptional = service.update(id, account);
         if (accountOptional.isPresent()) {
             return ResponseEntity
                     .status(HttpStatus.CREATED)
@@ -56,10 +59,17 @@ public class AccountController {
                 .build();
     }
 
-    @DeleteMapping
-    public ResponseEntity<Map<String, String>> deleteAccount(@RequestBody Account account) {
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(accountService.deleteAccount(account));
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, String>> deleteAccount(@PathVariable Long id) {
+        try {
+            service.delete(id);
+            return ResponseEntity
+                    .status(HttpStatus.OK.value())
+                    .body(Collections.singletonMap("message", "Cuenta eliminada con éxito"));
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Cuenta no encontrada");
+        } catch (Exception e) {
+            throw new BadRequestException("Error al eliminar la cuenta");
+        }
     }
 }

@@ -14,7 +14,8 @@ import jakarta.persistence.EntityNotFoundException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-        @ExceptionHandler({ NullFieldException.class,
+        @ExceptionHandler({ BadRequestException.class,
+                        NullFieldException.class,
                         IllegalArgumentException.class })
         public ResponseEntity<ErrorDetails> handleNullFieldException(Exception e) {
                 ErrorDetails errorDetails = new ErrorDetails(
