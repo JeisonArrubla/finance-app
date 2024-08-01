@@ -24,7 +24,7 @@ public class Account {
 
     private BigDecimal balance;
 
-    @JsonIgnoreProperties({ "id", "accounts", "roles", "enabled" })
+    @JsonIgnoreProperties({ "accounts", "roles", "enabled" })
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
