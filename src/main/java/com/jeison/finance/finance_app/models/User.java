@@ -108,7 +108,7 @@ public class User {
         this.roles = roles;
     }
 
-    public Boolean getAdmin() {
+    public Boolean isAdmin() {
         return admin;
     }
 

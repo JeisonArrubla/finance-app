@@ -1,105 +1,19 @@
 package com.jeison.finance.finance_app.services;
 
-import com.jeison.finance.finance_app.models.Role;
-import com.jeison.finance.finance_app.models.User;
-import com.jeison.finance.finance_app.repositories.RoleRepository;
-import com.jeison.finance.finance_app.repositories.UserRepository;
-import com.jeison.finance.finance_app.services.interfaces.IUserService;
-
-import jakarta.persistence.EntityNotFoundException;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-@Service
-public class UserService implements IUserService {
+import com.jeison.finance.finance_app.models.User;
 
-    @Autowired
-    private UserRepository repository;
+public interface UserService {
 
-    @Autowired
-    private RoleRepository roleRepository;
+    User create(User user);
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    Optional<User> findById(Long id, String username);
 
-    @Override
-    public Optional<User> findById(Long id) {
-        return repository.findById(id);
-    }
+    List<User> findAll();
 
-    @Transactional(readOnly = true)
-    public List<User> findAll() {
-        List<User> users = new ArrayList<>();
-        repository.findAll().forEach(users::add);
-        return users;
-    }
+    User update(Long id, User user, String username);
 
-    @Transactional
-    @Override
-    public User create(User user) {
-        if (repository.existsByUsername(user.getUsername()))
-            throw new DuplicateKeyException("El nombre de usuario ya está en uso");
-        Optional<Role> userRoleOptional = roleRepository.findByName("ROLE_USER");
-        List<Role> roles = new ArrayList<>();
-        userRoleOptional.ifPresent(roles::add);
-        if (user.getAdmin() != null) {
-            if (user.getAdmin()) {
-                Optional<Role> adminRoleOptional = roleRepository.findByName("ROLE_ADMIN");
-                adminRoleOptional.ifPresent(roles::add);
-            }
-        }
-        user.setRoles(roles);
-        user.setUsername(user.getUsername().toLowerCase());
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return repository.save(user);
-    }
-
-    @Transactional
-    @Override
-    public Optional<User> update(Long id, User user) {
-
-        Optional<User> userOptional = repository.findById(id);
-        if (userOptional.isPresent()) {
-            User userDb = userOptional.orElseThrow();
-            if (user.getUsername() != null) {
-                if (!user.getUsername().equalsIgnoreCase(userDb.getUsername())) {
-                    if (repository.existsByUsername(user.getUsername()))
-                        throw new DuplicateKeyException("El nombre de usuario ya esta en uso");
-                    userDb.setUsername(user.getUsername());
-                }
-            }
-            if (user.getPassword() != null) {
-                userDb.setPassword(passwordEncoder.encode(user.getPassword()));
-            }
-            return Optional.of(repository.save(userDb));
-        }
-        return userOptional;
-    }
-
-    @Transactional
-    @Override
-    public Map<String, String> delete(Long id) {
-        Optional<User> userOptional = repository.findById(id);
-        if (userOptional.isPresent()) {
-            repository.delete(userOptional.get());
-            return Collections.singletonMap("message", "Usuario eliminado con éxito");
-        }
-        throw new EntityNotFoundException("Error al eliminar el usuario, inténtalo de nuevo");
-    }
-
-    @Override
-    @Transactional
-    public Optional<User> getUserByUsername(String username) {
-        return repository.findByUsername(username);
-    }
+    void delete(Long id, String username);
 }

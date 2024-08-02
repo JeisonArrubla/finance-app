@@ -15,8 +15,7 @@ import jakarta.persistence.EntityNotFoundException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-        @ExceptionHandler({ BadRequestException.class,
-                        NullFieldException.class })
+        @ExceptionHandler({ IllegalArgumentException.class })
         public ResponseEntity<ErrorDetails> handleBadRequestException(Exception e) {
                 ErrorDetails errorDetails = new ErrorDetails(
                                 LocalDateTime.now(),
@@ -39,7 +38,6 @@ public class GlobalExceptionHandler {
         }
 
         @ExceptionHandler({ NullPointerException.class,
-                        ResourceNotFoundException.class,
                         EntityNotFoundException.class,
                         NoSuchElementException.class })
         public ResponseEntity<ErrorDetails> handleNotFoundException(Exception e) {

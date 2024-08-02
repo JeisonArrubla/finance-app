@@ -1,6 +1,5 @@
 package com.jeison.finance.finance_app.controllers;
 
-import com.jeison.finance.finance_app.exceptions.BadRequestException;
 import com.jeison.finance.finance_app.models.Account;
 import com.jeison.finance.finance_app.services.AccountService;
 
@@ -83,8 +82,6 @@ public class AccountController {
                     .body(Collections.singletonMap("message", "Cuenta eliminada con éxito"));
         } catch (NoSuchElementException e) {
             throw new NoSuchElementException("Cuenta no encontrada");
-        } catch (Exception e) {
-            throw new BadRequestException("Error al eliminar la cuenta");
         }
     }
 }

@@ -11,8 +11,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.jeison.finance.finance_app.exceptions.NullFieldException;
-import com.jeison.finance.finance_app.exceptions.ResourceNotFoundException;
 import com.jeison.finance.finance_app.models.Account;
 import com.jeison.finance.finance_app.repositories.AccountRepository;
 import com.jeison.finance.finance_app.repositories.UserRepository;
@@ -34,18 +32,10 @@ public class AccountService {
 
     @Transactional
     public Account createAccount(Account account) {
-        if (account == null)
-            throw new NullPointerException("La cuenta no puede ser nula");
-        if (account.getDescription() == null)
-            throw new NullFieldException("La descripción de la cuenta no puede ser nula");
-        if (account.getUser() == null)
-            throw new NullFieldException("El usuario no puede ser nulo");
-        if (account.getUser().getId() == null)
-            throw new NullFieldException("El id del usuario no puede ser nulo");
         if (account.getBalance() == null)
             account.setBalance(BigDecimal.ZERO);
         if (!userRepository.existsById(account.getUser().getId()))
-            throw new ResourceNotFoundException("Usuario no encontrado");
+            throw new IllegalArgumentException("Usuario no encontrado");
         if (repository.findByDescriptionAndUser(account.getDescription(), account.getUser()).isPresent())
             throw new DuplicateKeyException("Nombre de cuenta ya existe");
 

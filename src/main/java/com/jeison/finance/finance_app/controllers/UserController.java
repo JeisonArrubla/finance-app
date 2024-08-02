@@ -7,6 +7,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -24,103 +25,140 @@ import org.springframework.web.bind.annotation.PutMapping;
 import jakarta.validation.Valid;
 
 import com.jeison.finance.finance_app.models.User;
-import com.jeison.finance.finance_app.services.interfaces.IUserService;
+import com.jeison.finance.finance_app.services.UserService;
 
 @RestController
 @RequestMapping("/api/v1/users")
 public class UserController {
 
     @Autowired
-    private IUserService service;
+    private UserService service;
+
+    @PostMapping
+    public ResponseEntity<?> create(@Valid @RequestBody User user, BindingResult bindingResult) {
+
+        if (bindingResult.hasFieldErrors())
+            return validation(bindingResult);
+
+        try {
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(service.create(user));
+
+        } catch (DuplicateKeyException e) {
+
+            throw new DuplicateKeyException(e.getMessage());
+
+        }
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> registerUser(@Valid @RequestBody User user, BindingResult bindingResult) {
+
+        if (user == null)
+            throw new IllegalArgumentException("El usuario no puede ser nulo");
+
+        user.setAdmin(false);
+
+        return create(user, bindingResult);
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<User> findById(@PathVariable Long id) {
-        if (!idMatch(id))
-            throw new AccessDeniedException("No tienes permisos para acceder a este recurso");
-        Optional<User> userOptional = service.findById(id);
-        if (userOptional.isPresent()) {
-            return ResponseEntity
-                    .status(HttpStatus.OK.value())
-                    .body(userOptional.orElseThrow());
+
+        if (id == null)
+            throw new IllegalArgumentException("El ID no puede ser nulo");
+
+        Optional<User> userOptional = service.findById(id, getCurrentUsername());
+
+        try {
+
+            return ResponseEntity.ok().body(userOptional.orElseThrow());
+
+        } catch (NoSuchElementException e) {
+
+            throw new NoSuchElementException("Usuario no encontrado");
+
+        } catch (AccessDeniedException e) {
+
+            throw new AccessDeniedException(e.getMessage());
+
         }
-        throw new NoSuchElementException("Usuario no encontrado");
     }
 
     @GetMapping
     public ResponseEntity<List<User>> findAll() {
+
         List<User> users = service.findAll();
+
         if (users.isEmpty())
             throw new NullPointerException("No hay usuarios registrados");
-        return ResponseEntity
-                .status(HttpStatus.OK.value())
-                .body(users);
-    }
 
-    @PostMapping
-    public ResponseEntity<?> create(@Valid @RequestBody User user, BindingResult bindingResult) {
-        if (bindingResult.hasFieldErrors())
-            return validation(bindingResult);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED.value())
-                .body(service.create(user));
-    }
-
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody User user, BindingResult bindingResult) {
-        user.setAdmin(false);
-        return create(user, bindingResult);
+        return ResponseEntity.ok().body(users);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody User user, BindingResult bindingResult) {
-        if (!idMatch(id))
-            throw new AccessDeniedException("No tienes permisos para actualizar este usuario");
+
+        if (id == null)
+            throw new IllegalArgumentException("El ID no puede ser nulo");
+
+        if (user == null)
+            throw new IllegalArgumentException("El usuario no puede ser nulo");
+
         if (bindingResult.hasFieldErrors())
             return validation(bindingResult);
-        Optional<User> userOptional = service.update(id, user);
-        if (userOptional.isPresent()) {
-            return ResponseEntity
-                    .status(HttpStatus.CREATED.value())
-                    .body(userOptional.orElseThrow());
+
+        try {
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(service.update(id, user, getCurrentUsername()));
+
+        } catch (NoSuchElementException e) {
+
+            throw new NoSuchElementException("No se encontró el usuario, inténtalo de nuevo");
+
+        } catch (DuplicateKeyException e) {
+
+            throw new DuplicateKeyException(e.getMessage());
+
+        } catch (AccessDeniedException e) {
+
+            throw new AccessDeniedException(e.getMessage());
+
         }
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, String>> deteleUser(@PathVariable Long id) {
-        return ResponseEntity
-                .status(HttpStatus.OK.value())
-                .body(service.delete(id));
-    }
+    public ResponseEntity<?> delete(@PathVariable Long id) {
 
-    private ResponseEntity<?> validation(BindingResult bindingResult) {
-        Map<String, String> errors = new HashMap<>();
-        bindingResult.getFieldErrors().forEach(error -> {
-            errors.put(error.getField(), error.getDefaultMessage());
-        });
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST.value())
-                .body(errors);
-    }
+        try {
 
-    // Compara un id con el id del usuario que hace la petición
-    private boolean idMatch(Long id) {
-        String username = SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getName();
-        Optional<User> userOptional = service.getUserByUsername(username);
-        if (userOptional.isPresent()) {
-            return userOptional.orElseThrow().getId().compareTo(id) == 0;
+            service.delete(id, getCurrentUsername());
+
+            return ResponseEntity.noContent().build();
+
+        } catch (NoSuchElementException e) {
+
+            throw new NoSuchElementException("No se encontró el usuario con ID " + id);
+
+        } catch (AccessDeniedException e) {
+
+            throw new AccessDeniedException(e.getMessage());
+
         }
+    }
 
-        // Esta excepción se produce cuando se actualiza el nombre de usuario pero el
-        // token no se ha actualizado.
-        // NOTA: El nombre de usuario (username) se utiliza como sujeto (subject) del
-        // token y también se incluye en los claims del token.
-        throw new NoSuchElementException("No se encontró el usuario " + username);
+    private ResponseEntity<Map<String, String>> validation(BindingResult bindingResult) {
+
+        Map<String, String> errors = new HashMap<>();
+
+        bindingResult.getFieldErrors()
+                .forEach(fieldErrors -> errors.put(fieldErrors.getField(), fieldErrors.getDefaultMessage()));
+
+        return ResponseEntity.badRequest().body(errors);
+    }
+
+    private String getCurrentUsername() {
+
+        return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 }
