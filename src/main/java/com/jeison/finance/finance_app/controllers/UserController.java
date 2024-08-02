@@ -36,11 +36,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<User> findById(@PathVariable Long id) {
-        Long currentUserId = service.getIdByUsername(SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getName());
-        if (currentUserId.compareTo(id) != 0)
+        if (!idMatch(id))
             throw new AccessDeniedException("No tienes permisos para acceder a este recurso");
         try {
             return ResponseEntity
@@ -78,6 +74,8 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody User user, BindingResult bindingResult) {
+        if (!idMatch(id))
+            throw new AccessDeniedException("No tienes permisos para actualizar este usuario");
         if (bindingResult.hasFieldErrors())
             return validation(bindingResult);
         Optional<User> userOptional = service.update(id, user);
@@ -106,5 +104,23 @@ public class UserController {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST.value())
                 .body(errors);
+    }
+
+    // Compara un id con el id del usuario que hace la petición
+    private boolean idMatch(Long id) {
+        String username = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+        Optional<User> userOptional = service.getUserByUsername(username);
+        if (userOptional.isPresent()) {
+            return userOptional.orElseThrow().getId().compareTo(id) == 0;
+        }
+
+        // Esta excepción se produce cuando se actualiza el nombre de usuario pero el
+        // token no se ha actualizado.
+        // NOTA: El nombre de usuario (username) se utiliza como sujeto (subject) del
+        // token y también se incluye en los claims del token.
+        throw new NoSuchElementException("No se encontró el usuario " + username);
     }
 }

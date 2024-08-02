@@ -18,5 +18,5 @@ public interface IUserService {
 
     Map<String, String> delete(Long id);
 
-    Long getIdByUsername(String username);
+    Optional<User> getUserByUsername(String username);
 }

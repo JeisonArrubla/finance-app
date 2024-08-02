@@ -9,6 +9,7 @@ import com.jeison.finance.finance_app.services.interfaces.IUserService;
 import jakarta.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,7 +50,7 @@ public class UserService implements IUserService {
     @Override
     public User create(User user) {
         if (repository.existsByUsername(user.getUsername()))
-            throw new IllegalArgumentException("El nombre de usuario ya está en uso");
+            throw new DuplicateKeyException("El nombre de usuario ya está en uso");
         Optional<Role> userRoleOptional = roleRepository.findByName("ROLE_USER");
         List<Role> roles = new ArrayList<>();
         userRoleOptional.ifPresent(roles::add);
@@ -68,11 +69,16 @@ public class UserService implements IUserService {
     @Transactional
     @Override
     public Optional<User> update(Long id, User user) {
+
         Optional<User> userOptional = repository.findById(id);
         if (userOptional.isPresent()) {
             User userDb = userOptional.orElseThrow();
             if (user.getUsername() != null) {
-                userDb.setUsername(user.getUsername());
+                if (!user.getUsername().equalsIgnoreCase(userDb.getUsername())) {
+                    if (repository.existsByUsername(user.getUsername()))
+                        throw new DuplicateKeyException("El nombre de usuario ya esta en uso");
+                    userDb.setUsername(user.getUsername());
+                }
             }
             if (user.getPassword() != null) {
                 userDb.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -94,7 +100,8 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public Long getIdByUsername(String username) {
-        return repository.findByUsername(username).orElseThrow().getId();
+    @Transactional
+    public Optional<User> getUserByUsername(String username) {
+        return repository.findByUsername(username);
     }
 }
