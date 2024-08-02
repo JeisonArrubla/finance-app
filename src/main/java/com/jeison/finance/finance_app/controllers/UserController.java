@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 
 import jakarta.validation.Valid;
 
-import com.jeison.finance.finance_app.exceptions.BadRequestException;
 import com.jeison.finance.finance_app.models.User;
 import com.jeison.finance.finance_app.services.interfaces.IUserService;
 
@@ -38,15 +37,13 @@ public class UserController {
     public ResponseEntity<User> findById(@PathVariable Long id) {
         if (!idMatch(id))
             throw new AccessDeniedException("No tienes permisos para acceder a este recurso");
-        try {
+        Optional<User> userOptional = service.findById(id);
+        if (userOptional.isPresent()) {
             return ResponseEntity
                     .status(HttpStatus.OK.value())
-                    .body(service.findById(id));
-        } catch (NoSuchElementException e) {
-            throw new NoSuchElementException("Usuario no encontrado");
-        } catch (Exception e) {
-            throw new BadRequestException("Error al consultar el usuario");
+                    .body(userOptional.orElseThrow());
         }
+        throw new NoSuchElementException("Usuario no encontrado");
     }
 
     @GetMapping

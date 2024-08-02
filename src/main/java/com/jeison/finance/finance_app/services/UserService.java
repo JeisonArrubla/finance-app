@@ -33,8 +33,8 @@ public class UserService implements IUserService {
     private PasswordEncoder passwordEncoder;
 
     @Override
-    public User findById(Long id) {
-        return repository.findById(id).orElseThrow();
+    public Optional<User> findById(Long id) {
+        return repository.findById(id);
     }
 
     @Transactional(readOnly = true)
