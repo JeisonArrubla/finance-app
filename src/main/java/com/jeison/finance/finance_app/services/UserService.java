@@ -41,8 +41,6 @@ public class UserService implements IUserService {
     public List<User> findAll() {
         List<User> users = new ArrayList<>();
         repository.findAll().forEach(users::add);
-        if (users.isEmpty())
-            throw new NullPointerException("No hay usuarios registrados");
         return users;
     }
 

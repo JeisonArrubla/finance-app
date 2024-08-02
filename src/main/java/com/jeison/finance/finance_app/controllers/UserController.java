@@ -48,9 +48,12 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<List<User>> findAll() {
+        List<User> users = service.findAll();
+        if (users.isEmpty())
+            throw new NullPointerException("No hay usuarios registrados");
         return ResponseEntity
                 .status(HttpStatus.OK.value())
-                .body(service.findAll());
+                .body(users);
     }
 
     @PostMapping
