@@ -31,13 +31,36 @@ public class AccountController {
     private AccountService service;
 
     @PostMapping
-    public ResponseEntity<?> createAccount(@RequestBody Account account) {
+    public ResponseEntity<?> create(@RequestBody Account account) {
+
+        if (account.getUser() == null)
+            throw new IllegalArgumentException("El usuario no puede ser nulo");
+
+        if (account.getUser().getId() == null)
+            throw new IllegalArgumentException("El ID del usuario no puede ser nulo");
+
         return ResponseEntity
                 .status(HttpStatus.CREATED.value())
-                .body(service.createAccount(account));
+                .body(service.create(account, getCurrentUsername()));
     }
 
-    @GetMapping("/{userId}")
+    @GetMapping("/{id}")
+    public ResponseEntity<Account> findById(@PathVariable Long id) {
+
+        try {
+
+            Account account = service.findById(id, getCurrentUsername()).orElseThrow();
+
+            return ResponseEntity.ok().body(account);
+
+        } catch (NoSuchElementException e) {
+
+            throw new NoSuchElementException("No se encontró la cuenta con ID " + id);
+
+        }
+    }
+
+    @GetMapping("/user/{userId}")
     public ResponseEntity<List<Account>> findByUserId(@PathVariable Long userId) {
         try {
             return ResponseEntity
@@ -76,12 +99,16 @@ public class AccountController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, String>> delete(@PathVariable Long id) {
         try {
-            service.delete(id);
+            service.delete(id, getCurrentUsername());
             return ResponseEntity
                     .status(HttpStatus.OK.value())
                     .body(Collections.singletonMap("message", "Cuenta eliminada con éxito"));
         } catch (NoSuchElementException e) {
             throw new NoSuchElementException("Cuenta no encontrada");
         }
+    }
+
+    private String getCurrentUsername() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 }

@@ -19,15 +19,15 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Pattern(regexp = "^[a-zA-Z0-9._-]+$", message = "El username solo puede contener letras, números, guiones y puntos.")
     @NotBlank(message = "El username no debe estar vacío.")
     @Size(min = 4, max = 15, message = "El username debe tener entre 4 y 15 caracteres")
+    @Pattern(regexp = "^[a-zA-Z0-9._-]+$", message = "El username solo puede contener letras, números, guiones y puntos.")
     @Column(nullable = false, length = 15, unique = true)
     private String username;
 
     @NotBlank(message = "La contraseña no debe estar vacía.")
-    @Column(nullable = false)
     @Size(min = 8, message = "La contraseña debe tener mínimo 8 caracteres")
+    @Column(nullable = false)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
