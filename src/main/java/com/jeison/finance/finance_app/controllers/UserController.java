@@ -3,11 +3,14 @@ package com.jeison.finance.finance_app.controllers;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,9 +21,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 
+import com.jeison.finance.finance_app.exceptions.BadRequestException;
 import com.jeison.finance.finance_app.models.User;
 import com.jeison.finance.finance_app.services.interfaces.IUserService;
 
@@ -31,21 +34,30 @@ public class UserController {
     @Autowired
     private IUserService service;
 
+    @GetMapping("/{id}")
+    public ResponseEntity<User> findById(@PathVariable Long id) {
+        Long currentUserId = service.getIdByUsername(SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName());
+        if (currentUserId.compareTo(id) != 0)
+            throw new AccessDeniedException("No tienes permisos para acceder a este recurso");
+        try {
+            return ResponseEntity
+                    .status(HttpStatus.OK.value())
+                    .body(service.findById(id));
+        } catch (NoSuchElementException e) {
+            throw new NoSuchElementException("Usuario no encontrado");
+        } catch (Exception e) {
+            throw new BadRequestException("Error al consultar el usuario");
+        }
+    }
+
     @GetMapping
     public ResponseEntity<List<User>> findAll() {
         return ResponseEntity
                 .status(HttpStatus.OK.value())
                 .body(service.findAll());
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<User> findById(@PathVariable Long id) {
-        Optional<User> userOptional = service.findById(id);
-        if (userOptional.isPresent()) {
-            return ResponseEntity.status(HttpStatus.OK.value())
-                    .body(userOptional.orElseThrow());
-        }
-        throw new EntityNotFoundException("Usuario no encontrado");
     }
 
     @PostMapping

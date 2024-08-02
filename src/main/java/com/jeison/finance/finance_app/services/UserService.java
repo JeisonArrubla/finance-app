@@ -32,8 +32,8 @@ public class UserService implements IUserService {
     private PasswordEncoder passwordEncoder;
 
     @Override
-    public Optional<User> findById(Long id) {
-        return repository.findById(id);
+    public User findById(Long id) {
+        return repository.findById(id).orElseThrow();
     }
 
     @Transactional(readOnly = true)
@@ -91,5 +91,10 @@ public class UserService implements IUserService {
             return Collections.singletonMap("message", "Usuario eliminado con éxito");
         }
         throw new EntityNotFoundException("Error al eliminar el usuario, inténtalo de nuevo");
+    }
+
+    @Override
+    public Long getIdByUsername(String username) {
+        return repository.findByUsername(username).orElseThrow().getId();
     }
 }

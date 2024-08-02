@@ -10,11 +10,13 @@ public interface IUserService {
 
     User create(User user);
 
-    Optional<User> findById(Long id);
+    User findById(Long id);
 
     List<User> findAll();
 
     Optional<User> update(Long id, User user);
 
     Map<String, String> delete(Long id);
+
+    Long getIdByUsername(String username);
 }
