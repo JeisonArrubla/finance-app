@@ -57,8 +57,10 @@ public class AccountServiceImpl implements AccountService {
     @Transactional(readOnly = true)
     @Override
     public List<Account> findByUserId(Long userId, String username) {
-        if (!userRepository.findById(userId).orElseThrow().getUsername().equals(username))
+
+        if (userId.compareTo(getCurrentUserId(username)) != 0)
             throw new AccessDeniedException("No tienes acceso a las cuentas de este usuario");
+
         return repository.findByUserId(userId);
     }
 
