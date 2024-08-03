@@ -6,6 +6,7 @@ import com.jeison.finance.finance_app.services.AccountService;
 import jakarta.validation.Valid;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -17,10 +18,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -79,19 +82,29 @@ public class AccountController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable Long id,
-            @Valid @RequestBody Account account) {
+            @Valid @RequestBody Account account, BindingResult bindingResult) {
+
+        if (bindingResult.hasFieldErrors())
+            return validation(bindingResult);
+
         try {
+
             return ResponseEntity
                     .status(HttpStatus.CREATED.value())
-                    .body(service.update(
-                            id,
-                            account,
-                            SecurityContextHolder
-                                    .getContext()
-                                    .getAuthentication()
-                                    .getName()));
+                    .body(service.update(id, account, getCurrentUsername()));
+
         } catch (NoSuchElementException e) {
+
             throw new NoSuchElementException("Cuenta no encontrada");
+
+        } catch (AccessDeniedException e) {
+
+            throw new AccessDeniedException(e.getMessage());
+
+        } catch (DuplicateKeyException e) {
+
+            throw new DuplicateKeyException(e.getMessage());
+
         }
     }
 
@@ -105,6 +118,16 @@ public class AccountController {
         } catch (NoSuchElementException e) {
             throw new NoSuchElementException("Cuenta no encontrada");
         }
+    }
+
+    private ResponseEntity<Map<String, String>> validation(BindingResult bindingResult) {
+
+        Map<String, String> errors = new HashMap<>();
+
+        bindingResult.getFieldErrors()
+                .forEach(fieldErrors -> errors.put(fieldErrors.getField(), fieldErrors.getDefaultMessage()));
+
+        return ResponseEntity.badRequest().body(errors);
     }
 
     private String getCurrentUsername() {

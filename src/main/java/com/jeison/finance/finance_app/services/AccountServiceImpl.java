@@ -34,7 +34,7 @@ public class AccountServiceImpl implements AccountService {
             account.setBalance(BigDecimal.ZERO);
 
         if (repository.findByDescriptionAndUser(account.getDescription(), account.getUser()).isPresent())
-            throw new DuplicateKeyException("Nombre de cuenta ya existe");
+            throw new DuplicateKeyException("Ya tienes una cuenta con esta descripción");
 
         return repository.save(account);
     }
@@ -67,10 +67,21 @@ public class AccountServiceImpl implements AccountService {
     @Transactional
     @Override
     public Account update(Long id, Account account, String username) {
+
         Account dbAccount = repository.findById(id).orElseThrow();
-        if (!dbAccount.getUser().getUsername().equals(username))
+
+        Long userId = getCurrentUserId(username);
+
+        if (userId.compareTo(dbAccount.getUser().getId()) != 0)
             throw new AccessDeniedException("No tienes permiso para editar esta cuenta");
+
+        if (!account.getDescription().equalsIgnoreCase(dbAccount.getDescription())) {
+            if (repository.findByDescriptionAndUser(account.getDescription(), dbAccount.getUser()).isPresent())
+                throw new DuplicateKeyException("Ya tienes una cuenta con esta descripción");
+        }
+
         dbAccount.setDescription(account.getDescription());
+
         return repository.save(dbAccount);
     }
 
@@ -80,6 +91,7 @@ public class AccountServiceImpl implements AccountService {
         repository.delete(repository.findById(id).orElseThrow());
     }
 
+    @Transactional(readOnly = true)
     private Long getCurrentUserId(String username) {
         return userRepository.findByUsername(username).orElseThrow().getId();
     }
