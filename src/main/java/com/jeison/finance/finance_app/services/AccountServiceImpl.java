@@ -30,11 +30,11 @@ public class AccountServiceImpl implements AccountService {
         if (getCurrentUserId(username).compareTo(account.getUser().getId()) != 0)
             throw new AccessDeniedException("No tienes permisos para agregar cuentas en este usuario");
 
-        if (account.getBalance() == null)
-            account.setBalance(BigDecimal.ZERO);
-
         if (repository.findByDescriptionAndUser(account.getDescription(), account.getUser()).isPresent())
             throw new DuplicateKeyException("Ya tienes una cuenta con esta descripción");
+
+        if (account.getBalance() == null)
+            account.setBalance(BigDecimal.ZERO);
 
         return repository.save(account);
     }

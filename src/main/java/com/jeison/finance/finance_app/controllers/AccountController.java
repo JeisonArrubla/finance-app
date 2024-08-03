@@ -18,10 +18,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,7 +33,10 @@ public class AccountController {
     private AccountService service;
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody Account account) {
+    public ResponseEntity<?> create(@Valid @RequestBody Account account, BindingResult bindingResult) {
+
+        if (bindingResult.hasFieldErrors())
+            return validation(bindingResult);
 
         if (account.getUser() == null)
             throw new IllegalArgumentException("El usuario no puede ser nulo");
@@ -44,7 +45,7 @@ public class AccountController {
             throw new IllegalArgumentException("El ID del usuario no puede ser nulo");
 
         return ResponseEntity
-                .status(HttpStatus.CREATED.value())
+                .status(HttpStatus.CREATED)
                 .body(service.create(account, getCurrentUsername()));
     }
 
@@ -67,17 +68,10 @@ public class AccountController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Account>> findByUserId(@PathVariable Long userId) {
 
-        try {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(service.findByUserId(userId, getCurrentUsername()));
 
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(service.findByUserId(userId, getCurrentUsername()));
-
-        } catch (AccessDeniedException e) {
-
-            throw new AccessDeniedException(e.getMessage());
-
-        }
     }
 
     @PutMapping("/{id}")
@@ -90,20 +84,12 @@ public class AccountController {
         try {
 
             return ResponseEntity
-                    .status(HttpStatus.CREATED.value())
+                    .status(HttpStatus.CREATED)
                     .body(service.update(id, account, getCurrentUsername()));
 
         } catch (NoSuchElementException e) {
 
             throw new NoSuchElementException("Cuenta no encontrada");
-
-        } catch (AccessDeniedException e) {
-
-            throw new AccessDeniedException(e.getMessage());
-
-        } catch (DuplicateKeyException e) {
-
-            throw new DuplicateKeyException(e.getMessage());
 
         }
     }
@@ -113,7 +99,7 @@ public class AccountController {
         try {
             service.delete(id, getCurrentUsername());
             return ResponseEntity
-                    .status(HttpStatus.OK.value())
+                    .status(HttpStatus.OK)
                     .body(Collections.singletonMap("message", "Cuenta eliminada con éxito"));
         } catch (NoSuchElementException e) {
             throw new NoSuchElementException("Cuenta no encontrada");

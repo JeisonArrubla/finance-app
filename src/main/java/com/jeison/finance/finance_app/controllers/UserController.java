@@ -54,9 +54,6 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody User user, BindingResult bindingResult) {
 
-        if (user == null)
-            throw new IllegalArgumentException("El usuario no puede ser nulo");
-
         user.setAdmin(false);
 
         return create(user, bindingResult);
@@ -64,9 +61,6 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<User> findById(@PathVariable Long id) {
-
-        if (id == null)
-            throw new IllegalArgumentException("El ID no puede ser nulo");
 
         Optional<User> userOptional = service.findById(id, getCurrentUsername());
 
@@ -98,12 +92,6 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody User user, BindingResult bindingResult) {
-
-        if (id == null)
-            throw new IllegalArgumentException("El ID no puede ser nulo");
-
-        if (user == null)
-            throw new IllegalArgumentException("El usuario no puede ser nulo");
 
         if (bindingResult.hasFieldErrors())
             return validation(bindingResult);
