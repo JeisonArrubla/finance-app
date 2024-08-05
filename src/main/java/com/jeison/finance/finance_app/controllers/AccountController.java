@@ -5,7 +5,6 @@ import com.jeison.finance.finance_app.services.AccountService;
 
 import jakarta.validation.Valid;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -97,11 +96,13 @@ public class AccountController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, String>> delete(@PathVariable Long id) {
         try {
+
             service.delete(id, getCurrentUsername());
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(Collections.singletonMap("message", "Cuenta eliminada con éxito"));
+
+            return ResponseEntity.noContent().build();
+
         } catch (NoSuchElementException e) {
+
             throw new NoSuchElementException("Cuenta no encontrada");
         }
     }

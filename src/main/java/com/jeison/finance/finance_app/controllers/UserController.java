@@ -7,10 +7,8 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -40,15 +38,7 @@ public class UserController {
         if (bindingResult.hasFieldErrors())
             return validation(bindingResult);
 
-        try {
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(service.create(user));
-
-        } catch (DuplicateKeyException e) {
-
-            throw new DuplicateKeyException(e.getMessage());
-
-        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(user));
     }
 
     @PostMapping("/register")
@@ -71,10 +61,6 @@ public class UserController {
         } catch (NoSuchElementException e) {
 
             throw new NoSuchElementException("Usuario no encontrado");
-
-        } catch (AccessDeniedException e) {
-
-            throw new AccessDeniedException(e.getMessage());
 
         }
     }
@@ -104,14 +90,6 @@ public class UserController {
 
             throw new NoSuchElementException("No se encontró el usuario, inténtalo de nuevo");
 
-        } catch (DuplicateKeyException e) {
-
-            throw new DuplicateKeyException(e.getMessage());
-
-        } catch (AccessDeniedException e) {
-
-            throw new AccessDeniedException(e.getMessage());
-
         }
     }
 
@@ -127,10 +105,6 @@ public class UserController {
         } catch (NoSuchElementException e) {
 
             throw new NoSuchElementException("No se encontró el usuario con ID " + id);
-
-        } catch (AccessDeniedException e) {
-
-            throw new AccessDeniedException(e.getMessage());
 
         }
     }

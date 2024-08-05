@@ -88,7 +88,15 @@ public class AccountServiceImpl implements AccountService {
     @Transactional
     @Override
     public void delete(Long id, String username) {
-        repository.delete(repository.findById(id).orElseThrow());
+
+        Account account = repository.findById(id).orElseThrow();
+
+        Long userId = account.getUser().getId();
+
+        if (userId.compareTo(getCurrentUserId(username)) != 0)
+            throw new AccessDeniedException("No puedes eliminar este recurso");
+
+        repository.delete(account);
     }
 
     @Transactional(readOnly = true)
