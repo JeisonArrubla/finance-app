@@ -1,15 +1,12 @@
 package com.jeison.finance.finance_app.controllers;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,7 +24,7 @@ import com.jeison.finance.finance_app.services.UserService;
 
 @RestController
 @RequestMapping("/api/v1/users")
-public class UserController {
+public class UserController extends BaseController {
 
     @Autowired
     private UserService service;
@@ -104,23 +101,8 @@ public class UserController {
 
         } catch (NoSuchElementException e) {
 
-            throw new NoSuchElementException("No se encontró el usuario con ID " + id);
+            throw new NoSuchElementException("No se encontró el usuario");
 
         }
-    }
-
-    private ResponseEntity<Map<String, String>> validation(BindingResult bindingResult) {
-
-        Map<String, String> errors = new HashMap<>();
-
-        bindingResult.getFieldErrors()
-                .forEach(fieldErrors -> errors.put(fieldErrors.getField(), fieldErrors.getDefaultMessage()));
-
-        return ResponseEntity.badRequest().body(errors);
-    }
-
-    private String getCurrentUsername() {
-
-        return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 }

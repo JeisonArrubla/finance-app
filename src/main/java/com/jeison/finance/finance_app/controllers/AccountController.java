@@ -5,7 +5,6 @@ import com.jeison.finance.finance_app.services.AccountService;
 
 import jakarta.validation.Valid;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -19,14 +18,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("api/v1/accounts")
-public class AccountController {
+public class AccountController extends BaseController {
 
     @Autowired
     private AccountService service;
@@ -105,19 +103,5 @@ public class AccountController {
 
             throw new NoSuchElementException("Cuenta no encontrada");
         }
-    }
-
-    private ResponseEntity<Map<String, String>> validation(BindingResult bindingResult) {
-
-        Map<String, String> errors = new HashMap<>();
-
-        bindingResult.getFieldErrors()
-                .forEach(fieldErrors -> errors.put(fieldErrors.getField(), fieldErrors.getDefaultMessage()));
-
-        return ResponseEntity.badRequest().body(errors);
-    }
-
-    private String getCurrentUsername() {
-        return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 }
