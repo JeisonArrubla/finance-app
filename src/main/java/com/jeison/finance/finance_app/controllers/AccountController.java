@@ -2,6 +2,7 @@ package com.jeison.finance.finance_app.controllers;
 
 import com.jeison.finance.finance_app.models.Account;
 import com.jeison.finance.finance_app.services.AccountService;
+import static com.jeison.finance.finance_app.util.CommonUtils.*;
 
 import jakarta.validation.Valid;
 
@@ -24,7 +25,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("api/v1/accounts")
-public class AccountController extends BaseController {
+public class AccountController {
 
     @Autowired
     private AccountService service;
@@ -43,7 +44,7 @@ public class AccountController extends BaseController {
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(service.create(account, getCurrentUsername()));
+                .body(service.create(account));
     }
 
     @GetMapping("/{id}")
@@ -51,7 +52,7 @@ public class AccountController extends BaseController {
 
         try {
 
-            Account account = service.findById(id, getCurrentUsername()).orElseThrow();
+            Account account = service.findById(id).orElseThrow();
 
             return ResponseEntity.ok().body(account);
 
@@ -67,7 +68,7 @@ public class AccountController extends BaseController {
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(service.findByUserId(userId, getCurrentUsername()));
+                .body(service.findByUserId(userId));
 
     }
 
@@ -82,7 +83,7 @@ public class AccountController extends BaseController {
 
             return ResponseEntity
                     .status(HttpStatus.CREATED)
-                    .body(service.update(id, account, getCurrentUsername()));
+                    .body(service.update(id, account));
 
         } catch (NoSuchElementException e) {
 
@@ -95,7 +96,7 @@ public class AccountController extends BaseController {
     public ResponseEntity<Map<String, String>> delete(@PathVariable Long id) {
         try {
 
-            service.delete(id, getCurrentUsername());
+            service.delete(id);
 
             return ResponseEntity.noContent().build();
 

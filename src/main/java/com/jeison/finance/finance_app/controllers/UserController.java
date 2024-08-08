@@ -22,9 +22,11 @@ import jakarta.validation.Valid;
 import com.jeison.finance.finance_app.models.User;
 import com.jeison.finance.finance_app.services.UserService;
 
+import static com.jeison.finance.finance_app.util.CommonUtils.*;
+
 @RestController
 @RequestMapping("/api/v1/users")
-public class UserController extends BaseController {
+public class UserController {
 
     @Autowired
     private UserService service;
@@ -49,7 +51,7 @@ public class UserController extends BaseController {
     @GetMapping("/{id}")
     public ResponseEntity<User> findById(@PathVariable Long id) {
 
-        Optional<User> userOptional = service.findById(id, getCurrentUsername());
+        Optional<User> userOptional = service.findById(id);
 
         try {
 
@@ -81,7 +83,7 @@ public class UserController extends BaseController {
 
         try {
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(service.update(id, user, getCurrentUsername()));
+            return ResponseEntity.status(HttpStatus.CREATED).body(service.update(id, user));
 
         } catch (NoSuchElementException e) {
 
@@ -95,7 +97,7 @@ public class UserController extends BaseController {
 
         try {
 
-            service.delete(id, getCurrentUsername());
+            service.delete(id);
 
             return ResponseEntity.noContent().build();
 

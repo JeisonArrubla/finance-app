@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import static com.jeison.finance.finance_app.util.CommonUtils.*;
+
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -57,13 +59,9 @@ public class UserServiceImpl implements UserService {
 
     @Transactional(readOnly = true)
     @Override
-    public Optional<User> findById(Long id, String username) {
+    public Optional<User> findById(Long id) {
 
-        // Compara el id con el id del usuario que envía la petición
-        // El id del usuario que envía la petición se obtiene con el username
-        // NOTA: El username se utiliza como sujeto (subject) del
-        // token y también se incluye en los claims del token.
-        if (id.compareTo(repository.findByUsername(username).orElseThrow().getId()) != 0)
+        if (id.compareTo(repository.findByUsername(getCurrentUsername()).orElseThrow().getId()) != 0)
             throw new AccessDeniedException("No tienes permisos para acceder a este recurso");
 
         return repository.findById(id);
@@ -82,9 +80,9 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public User update(Long id, User user, String username) {
+    public User update(Long id, User user) {
 
-        if (id.compareTo(repository.findByUsername(username).orElseThrow().getId()) != 0)
+        if (id.compareTo(repository.findByUsername(getCurrentUsername()).orElseThrow().getId()) != 0)
             throw new AccessDeniedException("No tienes permisos para actualizar este usuario");
 
         Optional<User> userOptional = repository.findById(id);
@@ -114,9 +112,9 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public void delete(Long id, String username) {
+    public void delete(Long id) {
 
-        if (id.compareTo(repository.findByUsername(username).orElseThrow().getId()) != 0)
+        if (id.compareTo(repository.findByUsername(getCurrentUsername()).orElseThrow().getId()) != 0)
             throw new AccessDeniedException("No tienes permisos para eliminar este recurso");
 
         repository.delete(repository.findById(id).orElseThrow());

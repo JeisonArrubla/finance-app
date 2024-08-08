@@ -14,6 +14,8 @@ import com.jeison.finance.finance_app.models.Account;
 import com.jeison.finance.finance_app.repositories.AccountRepository;
 import com.jeison.finance.finance_app.repositories.UserRepository;
 
+import static com.jeison.finance.finance_app.util.CommonUtils.*;
+
 @Service
 public class AccountServiceImpl implements AccountService {
 
@@ -25,9 +27,9 @@ public class AccountServiceImpl implements AccountService {
 
     @Transactional
     @Override
-    public Account create(Account account, String username) {
+    public Account create(Account account) {
 
-        if (getCurrentUserId(username).compareTo(account.getUser().getId()) != 0)
+        if (getCurrentUserId(getCurrentUsername()).compareTo(account.getUser().getId()) != 0)
             throw new AccessDeniedException("No tienes permisos para agregar cuentas en este usuario");
 
         if (repository.findByDescriptionAndUser(account.getDescription(), account.getUser()).isPresent())
@@ -40,7 +42,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Optional<Account> findById(Long id, String username) {
+    public Optional<Account> findById(Long id) {
 
         Optional<Account> accountOptional = repository.findById(id);
 
@@ -48,7 +50,7 @@ public class AccountServiceImpl implements AccountService {
 
         Long userId = dbAccount.getUser().getId();
 
-        if (userId.compareTo(getCurrentUserId(username)) != 0)
+        if (userId.compareTo(getCurrentUserId(getCurrentUsername())) != 0)
             throw new AccessDeniedException("No tienes permisos para acceder a este recurso");
 
         return accountOptional;
@@ -56,9 +58,9 @@ public class AccountServiceImpl implements AccountService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<Account> findByUserId(Long userId, String username) {
+    public List<Account> findByUserId(Long userId) {
 
-        if (userId.compareTo(getCurrentUserId(username)) != 0)
+        if (userId.compareTo(getCurrentUserId(getCurrentUsername())) != 0)
             throw new AccessDeniedException("No tienes acceso a las cuentas de este usuario");
 
         return repository.findByUserId(userId);
@@ -66,11 +68,11 @@ public class AccountServiceImpl implements AccountService {
 
     @Transactional
     @Override
-    public Account update(Long id, Account account, String username) {
+    public Account update(Long id, Account account) {
 
         Account dbAccount = repository.findById(id).orElseThrow();
 
-        Long userId = getCurrentUserId(username);
+        Long userId = getCurrentUserId(getCurrentUsername());
 
         if (userId.compareTo(dbAccount.getUser().getId()) != 0)
             throw new AccessDeniedException("No tienes permiso para editar esta cuenta");
@@ -87,13 +89,13 @@ public class AccountServiceImpl implements AccountService {
 
     @Transactional
     @Override
-    public void delete(Long id, String username) {
+    public void delete(Long id) {
 
         Account account = repository.findById(id).orElseThrow();
 
         Long userId = account.getUser().getId();
 
-        if (userId.compareTo(getCurrentUserId(username)) != 0)
+        if (userId.compareTo(getCurrentUserId(getCurrentUsername())) != 0)
             throw new AccessDeniedException("No puedes eliminar este recurso");
 
         repository.delete(account);

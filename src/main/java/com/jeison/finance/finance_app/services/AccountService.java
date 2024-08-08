@@ -7,13 +7,13 @@ import com.jeison.finance.finance_app.models.Account;
 
 public interface AccountService {
 
-    Account create(Account account, String username);
+    Account create(Account account);
 
-    Optional<Account> findById(Long id, String username);
+    Optional<Account> findById(Long id);
 
-    List<Account> findByUserId(Long userId, String username);
+    List<Account> findByUserId(Long userId);
 
-    Account update(Long id, Account account, String username);
+    Account update(Long id, Account account);
 
-    void delete(Long id, String username);
+    void delete(Long id);
 }

@@ -1,4 +1,4 @@
-package com.jeison.finance.finance_app.controllers;
+package com.jeison.finance.finance_app.util;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -7,10 +7,9 @@ import org.springframework.validation.BindingResult;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BaseController {
+public class CommonUtils {
 
-    protected ResponseEntity<Map<String, String>> validation(BindingResult bindingResult) {
-
+    public static ResponseEntity<Map<String, String>> validation(BindingResult bindingResult) {
         Map<String, String> errors = new HashMap<>();
 
         bindingResult.getFieldErrors().forEach(fieldError -> errors.put(fieldError.getField(), fieldError.getDefaultMessage()));
@@ -18,7 +17,7 @@ public class BaseController {
         return ResponseEntity.badRequest().body(errors);
     }
 
-    protected String getCurrentUsername() {
+    public static String getCurrentUsername() {
         return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 }

@@ -11,6 +11,8 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.jeison.finance.finance_app.util.CommonUtils.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -28,12 +30,12 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Transactional
     @Override
-    public Transaction create(Transaction transaction, String username) {
+    public Transaction create(Transaction transaction) {
 
         Account sourceAccount = accountRepository.findById(transaction.getSourceAccount().getId()).orElseThrow();
         Account destinationAccount;
 
-        ensureAccountOwnership(sourceAccount, username);
+        ensureAccountOwnership(sourceAccount, getCurrentUsername());
 
         sourceAccount.setBalance(getSourceAccountNewBalance(transaction, sourceAccount));
         accountRepository.save(sourceAccount);
@@ -48,7 +50,7 @@ public class TransactionServiceImpl implements TransactionService {
             if (sourceAccount.getId().compareTo(destinationAccount.getId()) == 0)
                 throw new IllegalArgumentException("Cuenta origen y destino no pueden ser iguales");
 
-            ensureAccountOwnership(destinationAccount, username);
+            ensureAccountOwnership(destinationAccount, getCurrentUsername());
 
             BigDecimal destinationAccountInitialBalance = destinationAccount.getBalance();
             BigDecimal destinationAccountNewBalance = destinationAccountInitialBalance.add(transaction.getAmount());
