@@ -117,6 +117,6 @@ public class UserServiceImpl implements UserService {
         if (id.compareTo(repository.findByUsername(getCurrentUsername()).orElseThrow().getId()) != 0)
             throw new AccessDeniedException("No tienes permisos para eliminar este recurso");
 
-        repository.delete(repository.findById(id).orElseThrow());
+        repository.delete(repository.findById(id).orElseThrow(() -> new IllegalArgumentException("No se encontró el usuario que desea eliminar")));
     }
 }
