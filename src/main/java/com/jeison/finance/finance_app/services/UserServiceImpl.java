@@ -40,14 +40,10 @@ public class UserServiceImpl implements UserService {
 
         List<Role> roles = new ArrayList<>();
 
-        Optional<Role> userRoleOptional = roleRepository.findByName("ROLE_USER");
-        userRoleOptional.ifPresent(roles::add);
+        roleRepository.findByName("ROLE_USER").ifPresent(roles::add);
 
         if (user.isAdmin() != null) {
-            if (user.isAdmin()) {
-                Optional<Role> adminRoleOptional = roleRepository.findByName("ROLE_ADMIN");
-                adminRoleOptional.ifPresent(roles::add);
-            }
+            if (user.isAdmin()) roleRepository.findByName("ROLE_ADMIN").ifPresent(roles::add);
         }
 
         user.setUsername(user.getUsername().toLowerCase());
@@ -61,7 +57,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Optional<User> findById(Long id) {
 
-        if (id.compareTo(repository.findByUsername(getCurrentUsername()).orElseThrow().getId()) != 0)
+        if (id.compareTo(repository.findByUsername(getCurrentUsername()).orElseThrow(() -> new IllegalArgumentException("Error de autenticación, inténtalo de nuevo")).getId()) != 0)
             throw new AccessDeniedException("No tienes permisos para acceder a este recurso");
 
         return repository.findById(id);
@@ -90,7 +86,7 @@ public class UserServiceImpl implements UserService {
         if (userOptional.isEmpty())
             throw new NoSuchElementException("No se encontró el usuario con ID " + id);
 
-        User userDb = userOptional.orElseThrow();
+        User userDb = userOptional.orElseThrow(() -> new IllegalArgumentException("No se encontró el usuario que deseas actualizar"));
 
         // Valida que el username no esté en uso cuando sea diferente al actual
         if (user.getUsername() != null) {
@@ -103,7 +99,6 @@ public class UserServiceImpl implements UserService {
         }
 
         if (user.getPassword() != null) {
-
             userDb.setPassword(passwordEncoder.encode(user.getPassword()));
         }
 
