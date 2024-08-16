@@ -51,17 +51,7 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<User> findById(@PathVariable Long id) {
 
-        Optional<User> userOptional = service.findById(id);
-
-        try {
-
-            return ResponseEntity.ok().body(userOptional.orElseThrow());
-
-        } catch (NoSuchElementException e) {
-
-            throw new NoSuchElementException("Usuario no encontrado");
-
-        }
+        return ResponseEntity.ok().body(service.findById(id).orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado")));
     }
 
     @GetMapping
@@ -78,33 +68,15 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody User user, BindingResult bindingResult) {
 
-        if (bindingResult.hasFieldErrors())
-            return validation(bindingResult);
+        if (bindingResult.hasFieldErrors()) return validation(bindingResult);
 
-        try {
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(service.update(id, user));
-
-        } catch (NoSuchElementException e) {
-
-            throw new NoSuchElementException("No se encontró el usuario, inténtalo de nuevo");
-
-        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.update(id, user));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
 
-        try {
-
-            service.delete(id);
-
-            return ResponseEntity.noContent().build();
-
-        } catch (NoSuchElementException e) {
-
-            throw new NoSuchElementException("No se encontró el usuario");
-
-        }
+        service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }
