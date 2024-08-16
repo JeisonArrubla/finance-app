@@ -2,7 +2,6 @@ package com.jeison.finance.finance_app.services;
 
 import com.jeison.finance.finance_app.models.Account;
 import com.jeison.finance.finance_app.models.Transaction;
-import com.jeison.finance.finance_app.models.TransactionType;
 import com.jeison.finance.finance_app.repositories.AccountRepository;
 import com.jeison.finance.finance_app.repositories.TransactionRepository;
 import com.jeison.finance.finance_app.repositories.UserRepository;
@@ -11,6 +10,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.jeison.finance.finance_app.models.TransactionType.*;
 import static com.jeison.finance.finance_app.util.CommonUtils.*;
 
 import java.math.BigDecimal;
@@ -31,26 +31,25 @@ public class TransactionServiceImpl implements TransactionService {
     @Transactional
     @Override
     public Transaction create(Transaction transaction) {
-
-        Account sourceAccount = accountRepository.findById(transaction.getSourceAccount().getId()).orElseThrow();
+        
+        Account sourceAccount = accountRepository.findById(transaction.getSourceAccount().getId()).orElseThrow(() -> new IllegalArgumentException("Cuenta origen no encontrada"));
         Account destinationAccount;
 
-        ensureAccountOwnership(sourceAccount, getCurrentUsername());
+        ensureAccountOwnership(sourceAccount);
 
         sourceAccount.setBalance(getSourceAccountNewBalance(transaction, sourceAccount));
         accountRepository.save(sourceAccount);
 
-        if (transaction.getType().equals(TransactionType.TRANSFER)) {
-
+        if (transaction.getType().equals(TRANSFER)) {
             if (transaction.getDestinationAccount() == null)
                 throw new IllegalArgumentException("Debes indicar la cuenta destino");
 
-            destinationAccount = accountRepository.findById(transaction.getDestinationAccount().getId()).orElseThrow();
+            destinationAccount = accountRepository.findById(transaction.getDestinationAccount().getId()).orElseThrow(() -> new IllegalArgumentException("Cuenta destino no encontrada"));
 
             if (sourceAccount.getId().compareTo(destinationAccount.getId()) == 0)
                 throw new IllegalArgumentException("Cuenta origen y destino no pueden ser iguales");
 
-            ensureAccountOwnership(destinationAccount, getCurrentUsername());
+            ensureAccountOwnership(destinationAccount);
 
             BigDecimal destinationAccountInitialBalance = destinationAccount.getBalance();
             BigDecimal destinationAccountNewBalance = destinationAccountInitialBalance.add(transaction.getAmount());
@@ -66,14 +65,13 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     private static BigDecimal getSourceAccountNewBalance(Transaction transaction, Account sourceAccount) {
-
+        
         BigDecimal sourceAccountInitialBalance = sourceAccount.getBalance();
         BigDecimal sourceAccountNewBalance;
 
-        if (transaction.getType().equals(TransactionType.WITHDRAWAL)
-                || transaction.getType().equals(TransactionType.TRANSFER)) {
+        if (transaction.getType().equals(WITHDRAWAL) || transaction.getType().equals(TRANSFER)) {
             sourceAccountNewBalance = sourceAccountInitialBalance.subtract(transaction.getAmount());
-        } else if (transaction.getType().equals(TransactionType.DEPOSIT)) {
+        } else if (transaction.getType().equals(DEPOSIT)) {
             sourceAccountNewBalance = sourceAccountInitialBalance.add(transaction.getAmount());
         } else {
             throw new IllegalArgumentException("El tipo de transacción no es válido");
@@ -82,8 +80,10 @@ public class TransactionServiceImpl implements TransactionService {
         return sourceAccountNewBalance;
     }
 
-    private void ensureAccountOwnership(Account account, String username) {
-        if (userRepository.findByUsername(username).orElseThrow().getId().compareTo(account.getUser().getId()) != 0)
+    private void ensureAccountOwnership(Account account) {
+
+        if (userRepository.findByUsername(getCurrentUsername()).orElseThrow().getId()
+                .compareTo(account.getUser().getId()) != 0)
             throw new AccessDeniedException("Transacción no autorizada");
     }
 }
