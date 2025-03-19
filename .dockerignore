@@ -1,0 +1,57 @@
+# Ignorar carpetas de construcción y artefactos generados
+target/
+*.jar
+*.war
+*.ear
+
+# Ignorar archivos y carpetas de Maven que no sean necesarios para la compilación
+.mvn/
+**/pom.xml.tag
+**/pom.xml.releaseBackup
+**/pom.xml.next
+**/release.properties
+**/dependency-reduced-pom.xml
+**/buildNumber.properties
+
+# Ignorar configuraciones de entornos de desarrollo (IDE)
+.vscode/
+.idea/
+*.iml
+
+# Ignorar archivos de control de versiones
+.git/
+.gitignore
+
+# Ignorar logs y archivos temporales
+logs/
+*.log
+hs_err_pid*
+*.swp
+*.swo
+*.swn
+*.bak
+
+# Ignorar archivos de Kubernetes y Helm que no sean necesarios en la imagen final
+k8s/
+helm/
+helm-chart/
+*.tgz
+*.yaml
+*.yml
+
+# Ignorar archivos sensibles y de configuración local
+*.env
+.env
+secrets/
+application.properties
+application.yml
+application-dev.properties
+application-prod.properties
+
+# Ignorar archivos del sistema y caché innecesarios
+.DS_Store
+Thumbs.db
+
+# Incluir solo lo necesario para la construcción
+!src/
+!pom.xml
