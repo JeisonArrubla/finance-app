@@ -1,9 +1,9 @@
+name: $(Year:yy)$(DayOfYear).$(Rev:r) 
+
 trigger: none
 
 pool:
   name: Default
-
-name: $(Year:yy)$(DayOfYear).$(Rev:r) 
 
 variables:
 - group: helm-test
@@ -34,4 +34,4 @@ stages:
               command: 'buildAndPush'
               dockerfile: 'Dockerfile'
               repository: $(ECR_REPOSITORY_URL)
-              tags: '$(APP_VERSION)-$BUILD_ID'
+              tags: '$(APP_VERSION)-$(Build.BuildNumber)'
