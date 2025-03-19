@@ -1,0 +1,37 @@
+trigger: none
+
+pool:
+  name: Default
+
+name: $(Year:yy)$(DayOfYear).$(Rev:r) 
+
+variables:
+- group: helm-test
+
+stages:
+  - stage: Construir_Y_Subir_Imagen
+    displayName: 'Construir y Subir Imagen Docker'
+    jobs:
+      - job: Construir_Subir
+        displayName: 'Construir y Subir a AWS ECR'
+        steps:
+          - checkout: self
+
+          - script: |
+              aws configure set aws_access_key_id $(AWS_ACCESS_KEY_ID)
+              aws configure set aws_secret_access_key $(AWS_SECRET_ACCESS_KEY)
+              aws configure set region $(AWS_REGION)
+              aws sts get-caller-identity
+            displayName: 'Verificar Credenciales de AWS'
+
+          - script: |
+              aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(ECR_REPOSITORY_URL)
+            displayName: 'Iniciar sesión en AWS ECR'
+
+          - task: Docker@2
+            displayName: 'Construir Imagen y Subir a ECR'
+            inputs:
+              command: 'buildAndPush'
+              dockerfile: 'Dockerfile'
+              repository: $(ECR_REPOSITORY_URL)
+              tags: '$(APP_VERSION)-$BUILD_ID'
