@@ -1,0 +1,65 @@
+name: $(Year:yy)$(DayOfYear).$(Rev:r) 
+
+trigger: none
+
+pool:
+  name: Default
+
+variables:
+- group: helm-test
+
+stages:
+  - stage: Desplegar_A_Minikube
+    displayName: 'Desplegar en Minikube'
+    jobs:
+      - job: Desplegar
+        displayName: 'Desplegar Aplicación'
+        steps:
+          - checkout: self
+
+          - script: |
+              minikube status || minikube start
+            displayName: "Iniciar Minikube"
+
+          - script: |
+              kubectl create secret generic finance-app-secrets --from-literal=SPRING_DATASOURCE_USERNAME=$(DB_USER) --from-literal=SPRING_DATASOURCE_PASSWORD=$(DB_PASSWORD) --from-literal=MYSQL_ROOT_PASSWORD=$(DB_PASSWORD) --from-literal=MYSQL_DATABASE=$(DATABASE) --from-literal=MYSQL_USER=$(DB_USER) --from-literal=MYSQL_PASSWORD=$(DB_PASSWORD) --dry-run=client -o yaml | kubectl apply -f -
+
+              kubectl create configmap finance-app-config --from-literal=SPRING_DATASOURCE_URL="jdbc:mysql://finance-app-database:3306/$(DATABASE)" --dry-run=client -o yaml | kubectl apply -f -
+            displayName: "Crear ConfigMap y Secrets"
+            
+          - task: PowerShell@2
+            displayName: "Usar Docker en Minikube"
+            inputs:
+              targetType: inline
+              script: |
+                & minikube -p minikube docker-env --shell powershell | Invoke-Expression
+
+          - script: |
+              aws configure set aws_access_key_id $(CHART_AWS_ACCESS_KEY_ID)
+              aws configure set aws_secret_access_key $(CHART_AWS_ACCESS_KEY)
+              aws configure set region $(AWS_REGION)
+              aws sts get-caller-identity
+            displayName: 'Verificar Credenciales de S3'
+
+          - script: |
+              aws s3 cp s3://finance-app-chart/finance-app-backend-0.1.0.tgz ./finance-app-backend-0.1.0.tgz
+            displayName: 'Descargar chart de S3'
+
+          - script: |
+              aws configure set aws_access_key_id $(AWS_ACCESS_KEY_ID)
+              aws configure set aws_secret_access_key $(AWS_SECRET_ACCESS_KEY)
+              aws configure set region $(AWS_REGION)
+              aws sts get-caller-identity
+            displayName: 'Verificar Credenciales de ECR'
+
+          - script: |
+              aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin 746669227380.dkr.ecr.us-east-1.amazonaws.com/ecr-lab-financeapp
+            displayName: 'Iniciar sesión en AWS ECR'
+
+          - script: |
+              echo "##vso[task.setvariable variable=LATEST_TAG]$(aws ecr describe-images --repository-name 'ecr-lab-financeapp' --query 'imageDetails | sort_by(@, &imagePushedAt) | [-1].imageTags[0]' --output text)"
+            displayName: 'Guardar última versión de imagen'
+
+          - script: |
+              helm upgrade --install --set image.tag=$(LATEST_TAG) finance-app ./finance-app-backend-0.1.0.tgz
+            displayName: "Actualizar release con Helm"
