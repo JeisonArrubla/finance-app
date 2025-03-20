@@ -9,7 +9,7 @@ variables:
 - group: helm-test
 
 stages:
-  - stage: Integracion_Continua
+  - stage: CI
     displayName: 'Integración Continua'
     jobs:
       - job: Construir_Subir
