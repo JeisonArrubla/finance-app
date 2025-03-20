@@ -46,11 +46,6 @@ stages:
             displayName: 'Descargar chart de S3'
 
           - script: |
-              helm repo add finance-app s3://finance-app-chart/
-              helm repo update
-            displayName: "Agregar y actualizar repositorio de Helm"
-
-          - script: |
               aws configure set aws_access_key_id $(AWS_ACCESS_KEY_ID)
               aws configure set aws_secret_access_key $(AWS_SECRET_ACCESS_KEY)
               aws configure set region $(AWS_REGION)
