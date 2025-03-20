@@ -7,6 +7,8 @@ pool:
 
 variables:
 - group: helm-test
+- name: chartPackage
+  value: ./finance-app-backend-0.1.0.tgz
 
 stages:
   - stage: CD
@@ -35,8 +37,19 @@ stages:
             displayName: 'Configurar credenciales de AWS CLI'
 
           - script: |
-              aws s3 cp s3://finance-app-chart/finance-app-backend-0.1.0.tgz ./finance-app-backend-0.1.0.tgz
+              aws s3 cp $(S3_CHART_URI) $(chartPackage)
             displayName: 'Descargar Helm Chart desde S3'
+
+          - script: |
+              aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(ECR_REPOSITORY_URL)
+            displayName: 'Autenticarse en AWS ECR para Docker'
+
+          - script: |
+                kubectl create secret docker-registry ecr-secret \
+                --docker-server=$(ECR_REPOSITORY_SERVER) \
+                --docker-username=AWS \
+                --docker-password=$(aws ecr get-login-password --region us-east-1)
+            displayName: 'Crear imagePullSecret en Kubernetes'
 
           - task: PowerShell@2
             displayName: "Obtener última versión de la imagen"
@@ -47,6 +60,5 @@ stages:
                 echo "##vso[task.setvariable variable=LATEST_TAG]$latestTag"
 
           - script: |
-              aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin 746669227380.dkr.ecr.us-east-1.amazonaws.com/ecr-lab-financeapp
-              helm upgrade --install --set image.tag=$(LATEST_TAG) finance-app ./finance-app-backend-0.1.0.tgz
+              helm upgrade --install --set image.tag=$(LATEST_TAG) finance-app $(chartPackage)
             displayName: "Actualizar release con Helm"
