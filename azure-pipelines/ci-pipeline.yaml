@@ -9,7 +9,7 @@ variables:
 - group: helm-test
 
 stages:
-  - stage: Construir_Y_Subir_Imagen
+  - stage: Integracion_Continua
     displayName: 'Construir y Subir Imagen Docker'
     jobs:
       - job: Construir_Subir
