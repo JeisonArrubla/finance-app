@@ -44,12 +44,16 @@ stages:
               aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(ECR_REPOSITORY_URL)
             displayName: 'Autenticarse en AWS ECR para Docker'
 
+          # - script: |
+          #       kubectl create secret docker-registry ecr-secret \
+          #       --docker-server=$(ECR_REPOSITORY_SERVER) \
+          #       --docker-username=AWS \
+          #       --docker-password=$(aws ecr get-login-password --region us-east-1)
+          #   displayName: 'Crear imagePullSecret en Kubernetes'
+
           - script: |
-                kubectl create secret docker-registry ecr-secret \
-                --docker-server=$(ECR_REPOSITORY_SERVER) \
-                --docker-username=AWS \
-                --docker-password=$(aws ecr get-login-password --region us-east-1)
-            displayName: 'Crear imagePullSecret en Kubernetes'
+              kubectl create secret docker-registry ecr-secret --docker-server=$(ECR_REPOSITORY_SERVER) --docker-username=AWS --docker-password=$(aws ecr get-login-password --region us-east-1) --dry-run=client -o yaml | kubectl apply -f -
+            displayName: "Crear imagePullSecret en Kubernetes"
 
           - task: PowerShell@2
             displayName: "Obtener última versión de la imagen"
