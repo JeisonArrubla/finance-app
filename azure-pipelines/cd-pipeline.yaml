@@ -35,10 +35,6 @@ stages:
             displayName: 'Configurar credenciales de AWS CLI'
 
           - script: |
-              aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin 746669227380.dkr.ecr.us-east-1.amazonaws.com/ecr-lab-financeapp
-            displayName: 'Autenticarse en AWS ECR para Docker'
-
-          - script: |
               aws s3 cp s3://finance-app-chart/finance-app-backend-0.1.0.tgz ./finance-app-backend-0.1.0.tgz
             displayName: 'Descargar Helm Chart desde S3'
 
@@ -51,5 +47,6 @@ stages:
                 echo "##vso[task.setvariable variable=LATEST_TAG]$latestTag"
 
           - script: |
+              aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin 746669227380.dkr.ecr.us-east-1.amazonaws.com/ecr-lab-financeapp
               helm upgrade --install --set image.tag=$(LATEST_TAG) finance-app ./finance-app-backend-0.1.0.tgz
             displayName: "Actualizar release con Helm"
