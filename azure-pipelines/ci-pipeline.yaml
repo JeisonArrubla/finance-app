@@ -10,10 +10,10 @@ variables:
 
 stages:
   - stage: Integracion_Continua
-    displayName: 'Construir y Subir Imagen Docker'
+    displayName: 'Integración Continua'
     jobs:
       - job: Construir_Subir
-        displayName: 'Construir y Subir a AWS ECR'
+        displayName: 'Construir y Subir Imagen Docker'
         steps:
           - checkout: self
 
