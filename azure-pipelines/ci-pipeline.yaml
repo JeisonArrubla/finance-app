@@ -18,8 +18,8 @@ stages:
           - checkout: self
 
           - script: |
-              aws configure set aws_access_key_id $(AWS_USER_KEY_ID)
-              aws configure set aws_secret_access_key $(AWS_USER_KEY)
+              aws configure set aws_access_key_id $(CLI_ACCESS_KEY_ID)
+              aws configure set aws_secret_access_key $(CLI_ACCESS_KEY)
               aws configure set region $(AWS_REGION)
               aws sts get-caller-identity
             displayName: 'Verificar Credenciales de AWS'
