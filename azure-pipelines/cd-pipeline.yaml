@@ -45,14 +45,16 @@ stages:
             displayName: 'Autenticarse en AWS ECR para Docker'
 
           - task: PowerShell@2
-            displayName: 'Crear imagePullSecret en Kubernetes'
+            displayName: 'Crear o actualizar imagePullSecret en Kubernetes'
             inputs:
               targetType: inline
               script: |
+                $ECR_PASSWORD = aws ecr get-login-password --region $(AWS_REGION)
                 kubectl create secret docker-registry ecr-secret `
                   --docker-server=$(ECR_REPOSITORY_SERVER) `
                   --docker-username=AWS `
-                  --docker-password=$(aws ecr get-login-password --region $(AWS_REGION))
+                  --docker-password=$ECR_PASSWORD `
+                  --dry-run=client -o yaml | kubectl apply -f -
 
           - task: PowerShell@2
             displayName: "Obtener última versión de la imagen"
