@@ -12,7 +12,7 @@ stages:
   - stage: CI
     displayName: 'Integración Continua'
     jobs:
-      - job: Construir_Subir
+      - job: Construir_Subir_Imagen
         displayName: 'Construir y Subir Imagen Docker'
         steps:
           - checkout: self
