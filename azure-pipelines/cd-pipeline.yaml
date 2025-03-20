@@ -56,9 +56,13 @@ stages:
               aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin 746669227380.dkr.ecr.us-east-1.amazonaws.com/ecr-lab-financeapp
             displayName: 'Iniciar sesión en AWS ECR'
 
-          - script: |
-              echo "##vso[task.setvariable variable=LATEST_TAG]$(aws ecr describe-images --repository-name 'ecr-lab-financeapp' --query 'imageDetails | sort_by(@, &imagePushedAt) | [-1].imageTags[0]' --output text)"
-            displayName: 'Guardar última versión de imagen'
+          - task: PowerShell@2
+            displayName: "Guardar última versión de imagen"
+            inputs:
+              targetType: inline
+              script: |
+                $latestTag = aws ecr describe-images --repository-name 'ecr-lab-financeapp' --query 'imageDetails | sort_by(@, &imagePushedAt) | [-1].imageTags[0]' --output text
+                echo "##vso[task.setvariable variable=LATEST_TAG]$latestTag"
 
           - script: |
               helm upgrade --install --set image.tag=$(LATEST_TAG) finance-app ./finance-app-backend-0.1.0.tgz
