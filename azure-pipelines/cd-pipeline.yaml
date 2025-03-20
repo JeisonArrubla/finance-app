@@ -9,11 +9,11 @@ variables:
 - group: helm-test
 
 stages:
-  - stage: Desplegar_A_Minikube
-    displayName: 'Desplegar en Minikube'
+  - stage: CD
+    displayName: 'Despliegue Continuo'
     jobs:
-      - job: Desplegar
-        displayName: 'Desplegar Aplicación'
+      - job: Deploy_Minikube
+        displayName: 'Deploy en Minikube con Helm'
         steps:
           - checkout: self
 
