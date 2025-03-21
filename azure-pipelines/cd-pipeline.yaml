@@ -7,8 +7,6 @@ pool:
 
 variables:
 - group: helm-test
-- name: chartPackage
-  value: ./finance-app-backend-0.1.0.tgz
 
 stages:
   - stage: CD
@@ -41,7 +39,7 @@ stages:
             displayName: 'Configurar credenciales de AWS CLI'
 
           - script: |
-              aws s3 cp $(S3_CHART_URI) $(chartPackage)
+              aws s3 cp $(S3_CHART_BUCKET)/$(S3_CHART_PATH) ./$(S3_CHART_PATH)
             displayName: 'Descargar Helm Chart desde S3'
 
           - script: |
@@ -69,5 +67,5 @@ stages:
                 echo "##vso[task.setvariable variable=LATEST_TAG]$latestTag"
 
           - script: |
-              helm upgrade --install --set image.repository=$(ECR_REPOSITORY_URL) --set image.tag=$(LATEST_TAG) --set namespace.name=$(PROJECT_NAME)-ns --set serviceAccount.name=$(PROJECT_NAME)-sa financeapp $(chartPackage)
+              helm upgrade --install --set image.repository=$(ECR_REPOSITORY_URL) --set image.tag=$(LATEST_TAG) --set namespace.name=$(PROJECT_NAME)-ns --set serviceAccount.name=$(PROJECT_NAME)-sa financeapp ./$(S3_CHART_PATH)
             displayName: "Actualizar release con Helm"
