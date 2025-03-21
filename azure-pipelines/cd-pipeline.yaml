@@ -28,7 +28,7 @@ stages:
           - script: |
               kubectl create secret generic finance-app-secrets --from-literal=SPRING_DATASOURCE_USERNAME=$(DB_USER) --from-literal=SPRING_DATASOURCE_PASSWORD=$(DB_PASSWORD) --from-literal=MYSQL_ROOT_PASSWORD=$(DB_PASSWORD) --from-literal=MYSQL_DATABASE=$(DATABASE) --from-literal=MYSQL_USER=$(DB_USER) --from-literal=MYSQL_PASSWORD=$(DB_PASSWORD) --dry-run=client -o yaml --namespace=$(PROJECT_NAME)-ns | kubectl apply -f -
 
-              kubectl create configmap finance-app-config --from-literal=SPRING_DATASOURCE_URL="jdbc:mysql://finance-app-database:3306/$(DATABASE)" --dry-run=client -o yaml --namespace=$(PROJECT_NAME)-ns | kubectl apply -f -
+              kubectl create configmap finance-app-config --from-literal=SPRING_DATASOURCE_URL="jdbc:mysql://$(PROJECT_NAME):3306/$(DATABASE)" --dry-run=client -o yaml --namespace=$(PROJECT_NAME)-ns | kubectl apply -f -
             displayName: "Crear ConfigMap y Secrets"
 
           - script: |
