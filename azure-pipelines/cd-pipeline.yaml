@@ -56,7 +56,7 @@ stages:
                   --docker-server=$(ECR_REPOSITORY_SERVER) `
                   --docker-username=AWS `
                   --docker-password=$ECR_PASSWORD `
-                  --dry-run=client -o yaml | kubectl apply -f -
+                  --dry-run=client -o yaml --namespace=$(PROJECT_NAME)-ns | kubectl apply -f -
 
           - task: PowerShell@2
             displayName: "Obtener última versión de la imagen"
