@@ -7,8 +7,6 @@ pool:
 
 variables:
 - group: helm-test
-- name: chartPackage
-  value: ./finance-app-backend-0.1.0.tgz
 
 stages:
   - stage: CD
@@ -24,9 +22,13 @@ stages:
             displayName: "Iniciar Minikube"
 
           - script: |
-              kubectl create secret generic finance-app-secrets --from-literal=SPRING_DATASOURCE_USERNAME=$(DB_USER) --from-literal=SPRING_DATASOURCE_PASSWORD=$(DB_PASSWORD) --from-literal=MYSQL_ROOT_PASSWORD=$(DB_PASSWORD) --from-literal=MYSQL_DATABASE=$(DATABASE) --from-literal=MYSQL_USER=$(DB_USER) --from-literal=MYSQL_PASSWORD=$(DB_PASSWORD) --dry-run=client -o yaml | kubectl apply -f -
+              kubectl create namespace $(PROJECT_NAME)-ns --dry-run=client -o yaml | kubectl apply -f -
+            displayName: "Crear Namespace"
 
-              kubectl create configmap finance-app-config --from-literal=SPRING_DATASOURCE_URL="jdbc:mysql://finance-app-database:3306/$(DATABASE)" --dry-run=client -o yaml | kubectl apply -f -
+          - script: |
+              kubectl create secret generic finance-app-secrets --from-literal=SPRING_DATASOURCE_USERNAME=$(DB_USER) --from-literal=SPRING_DATASOURCE_PASSWORD=$(DB_PASSWORD) --from-literal=MYSQL_ROOT_PASSWORD=$(DB_PASSWORD) --from-literal=MYSQL_DATABASE=$(DATABASE) --from-literal=MYSQL_USER=$(DB_USER) --from-literal=MYSQL_PASSWORD=$(DB_PASSWORD) --dry-run=client -o yaml --namespace=$(PROJECT_NAME)-ns | kubectl apply -f -
+
+              kubectl create configmap finance-app-config --from-literal=SPRING_DATASOURCE_URL="jdbc:mysql://$(PROJECT_NAME)-database:3306/$(DATABASE)" --dry-run=client -o yaml --namespace=$(PROJECT_NAME)-ns | kubectl apply -f -
             displayName: "Crear ConfigMap y Secrets"
 
           - script: |
@@ -37,7 +39,7 @@ stages:
             displayName: 'Configurar credenciales de AWS CLI'
 
           - script: |
-              aws s3 cp $(S3_CHART_URI) $(chartPackage)
+              aws s3 cp $(S3_CHART_BUCKET)/$(S3_CHART_PATH) ./$(S3_CHART_PATH)
             displayName: 'Descargar Helm Chart desde S3'
 
           - script: |
@@ -54,7 +56,7 @@ stages:
                   --docker-server=$(ECR_REPOSITORY_SERVER) `
                   --docker-username=AWS `
                   --docker-password=$ECR_PASSWORD `
-                  --dry-run=client -o yaml | kubectl apply -f -
+                  --dry-run=client -o yaml --namespace=$(PROJECT_NAME)-ns | kubectl apply -f -
 
           - task: PowerShell@2
             displayName: "Obtener última versión de la imagen"
@@ -65,5 +67,5 @@ stages:
                 echo "##vso[task.setvariable variable=LATEST_TAG]$latestTag"
 
           - script: |
-              helm upgrade --install --set image.tag=$(LATEST_TAG) finance-app $(chartPackage)
+              helm upgrade --install --set image.repository=$(ECR_REPOSITORY_URL) --set image.tag=$(LATEST_TAG) --set namespace.name=$(PROJECT_NAME)-ns --set serviceAccount.name=$(PROJECT_NAME)-sa financeapp ./$(S3_CHART_PATH)
             displayName: "Actualizar release con Helm"
