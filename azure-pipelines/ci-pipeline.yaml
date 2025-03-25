@@ -1,6 +1,9 @@
 name: $(Year:yy)$(DayOfYear).$(Rev:r) 
 
-trigger: none
+trigger:
+  branches:
+    include:
+      - main
 
 pool:
   name: Default
@@ -29,6 +32,7 @@ stages:
             displayName: 'Iniciar sesión en AWS ECR'
 
           - task: PowerShell@2
+            displayName: 'Inicar Docker Desktop'
             inputs:
               targetType: 'inline'
               script: |
