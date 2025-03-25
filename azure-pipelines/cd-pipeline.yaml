@@ -1,9 +1,6 @@
 name: $(Year:yy)$(DayOfYear).$(Rev:r)
 
-trigger:
-  branches:
-    include:
-      - main
+trigger: none
 
 pool:
   name: Default
@@ -19,14 +16,6 @@ stages:
         displayName: 'Deploy en Minikube con Helm'
         steps:
           - checkout: self
-
-          - task: PowerShell@2
-            displayName: 'Inicar Docker Desktop'
-            inputs:
-              targetType: 'inline'
-              script: |
-                Start-Process "C:\Program Files\Docker\Docker\Docker Desktop.exe"
-                Start-Sleep -Seconds 20
 
           - script: |
               minikube status || minikube start
