@@ -29,11 +29,6 @@ stages:
             displayName: 'Iniciar sesión en AWS ECR'
 
           - task: Docker@2
-            displayName: 'Iniciar Docker'
-            inputs:
-              command: 'start'
-
-          - task: Docker@2
             displayName: 'Construir Imagen y Subir a ECR'
             inputs:
               command: 'buildAndPush'
