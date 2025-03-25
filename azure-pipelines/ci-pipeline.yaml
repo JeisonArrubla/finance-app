@@ -29,7 +29,7 @@ stages:
             displayName: 'Iniciar sesión en AWS ECR'
 
           - script: |
-              start "" "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+              Start-Process "C:\Program Files\Docker\Docker\Docker Desktop.exe"
               timeout /t 20
             displayName: 'Iniciar Docker'
 
