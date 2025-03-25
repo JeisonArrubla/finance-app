@@ -1,9 +1,6 @@
 name: $(Year:yy)$(DayOfYear).$(Rev:r) 
 
-trigger:
-  branches:
-    include:
-      - main
+trigger: none
 
 pool:
   name: Default
@@ -31,13 +28,10 @@ stages:
               aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(ECR_REPOSITORY_URL)
             displayName: 'Iniciar sesión en AWS ECR'
 
-          - task: PowerShell@2
-            displayName: 'Inicar Docker Desktop'
+          - task: Docker@2
+            displayName: 'Iniciar Docker'
             inputs:
-              targetType: 'inline'
-              script: |
-                Start-Process "C:\Program Files\Docker\Docker\Docker Desktop.exe"
-                Start-Sleep -Seconds 20
+              command: 'start'
 
           - task: Docker@2
             displayName: 'Construir Imagen y Subir a ECR'
