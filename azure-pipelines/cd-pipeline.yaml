@@ -42,10 +42,6 @@ stages:
               aws s3 cp $(S3_CHART_BUCKET)/$(S3_CHART_PATH) ./$(S3_CHART_PATH)
             displayName: 'Descargar Helm Chart desde S3'
 
-          - script: |
-              aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(ECR_REPOSITORY_URL)
-            displayName: 'Autenticarse en AWS ECR para Docker'
-
           - task: PowerShell@2
             displayName: 'Crear o actualizar imagePullSecret en Kubernetes'
             inputs:
