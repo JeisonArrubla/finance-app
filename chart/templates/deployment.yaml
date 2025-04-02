@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}
+  namespace: {{ .Values.namespace.name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      imagePullSecrets:
+        - name: {{ .Values.image.pullSecrets.name }}
+      initContainers:
+        - name: wait-for-mysql
+          image: busybox:1.35.0-uclibc
+          command:
+            - "/bin/sh"
+            - "-c"
+            - "until nc -z -v -w30 {{ .Chart.Name }}-database 3306; do echo 'Waiting for MySQL...'; sleep 5; done; echo 'MySQL is up!'"
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.env.config }}
+            - secretRef:
+                name: {{ .Values.env.secrets }}
+          ports:
+            - containerPort: {{ .Values.containerPort }}

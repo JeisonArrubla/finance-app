@@ -1,0 +1,40 @@
+namespace:
+  name: ""
+
+serviceAccount:
+  name: ""
+
+replicaCount: 3
+
+image:
+  repository: ""
+  tag: ""
+  pullPolicy: IfNotPresent
+  pullSecrets:
+    name: ecr-secret
+
+service:
+  type: NodePort
+  port: 80
+  targetPort: 8080
+  nodePort: 30007
+
+env:
+  config: finance-app-config
+  secrets: finance-app-secrets
+
+containerPort: 8080
+
+database:
+  pvc:
+    name: mysql-pvc
+    accessModes: ReadWriteOnce
+    resourcesRequestsStorage: 1Gi
+  image:
+    name: mysql
+    tag: "8.0"
+  ports:
+    containerPort: 3306
+  volumeMounts:
+    name: mysql-storage
+    mountPath: /var/lib/mysql
